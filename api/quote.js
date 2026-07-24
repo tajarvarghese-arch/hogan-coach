@@ -36,7 +36,44 @@ async function fetchOne(symbol) {
         ? meta.previousClose
         : null
   const spark = downsample(result?.indicators?.quote?.[0]?.close, 24)
-  return { price, prevClose, ...(spark.length >= 2 ? { spark } : {}) }
+  const asOf = typeof meta.regularMarketTime === 'number' ? meta.regularMarketTime * 1000 : 0
+  return { price, prevClose, asOf, ...(spark.length >= 2 ? { spark } : {}) }
+}
+
+/* Yahoo's keyless chart feed sometimes stalls mid-session (observed
+   2026-07-24: every surface pinned to the same trade for 30+ min).
+   When a quote looks stale during trading hours, Cboe's free delayed
+   feed takes over for price/prevClose; the Yahoo spark is kept. */
+
+/* rough NYSE session envelope in UTC — wide on purpose: it only
+   gates the extra Cboe call, never the display */
+export function probablyTrading(nowMs) {
+  const d = new Date(nowMs)
+  const dow = d.getUTCDay()
+  if (dow === 0 || dow === 6) return false
+  const mins = d.getUTCHours() * 60 + d.getUTCMinutes()
+  return mins >= 13 * 60 && mins <= 21 * 60 + 30
+}
+
+export function isStale(asOfMs, nowMs) {
+  return !asOfMs || nowMs - asOfMs > 180_000
+}
+
+export function parseCboe(json) {
+  const d = json?.data
+  if (!d || typeof d.current_price !== 'number') return null
+  return {
+    price: d.current_price,
+    prevClose: typeof d.prev_day_close === 'number' ? d.prev_day_close : null,
+    asOf: Date.parse(`${(json.timestamp || '').replace(' ', 'T')}Z`) || 0,
+  }
+}
+
+async function fetchCboe(symbol) {
+  const url = `https://cdn.cboe.com/api/global/delayed_quotes/quotes/${encodeURIComponent(symbol)}.json`
+  const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' } })
+  if (!res.ok) throw new Error(`cboe ${res.status}`)
+  return parseCboe(await res.json())
 }
 
 export default async function handler(req, res) {
@@ -49,13 +86,27 @@ export default async function handler(req, res) {
   }
 
   const quotes = {}
+  const now = Date.now()
   await Promise.all(
     symbols.map(async (sym) => {
+      let q = null
       try {
-        quotes[sym] = await fetchOne(sym)
+        q = await fetchOne(sym)
       } catch {
-        // omit failed symbols; client keeps its last-known value
+        // fall through to Cboe
       }
+      if (probablyTrading(now) && (!q || isStale(q.asOf, now))) {
+        try {
+          const c = await fetchCboe(sym)
+          if (c && (!q || c.asOf > q.asOf)) {
+            q = { ...(q || {}), price: c.price, prevClose: c.prevClose ?? q?.prevClose ?? null, asOf: c.asOf, src: 'cboe' }
+          }
+        } catch {
+          // keep whatever Yahoo gave us
+        }
+      }
+      if (q) quotes[sym] = q
+      // symbols that failed both sources are omitted; client keeps its last-known value
     })
   )
 
