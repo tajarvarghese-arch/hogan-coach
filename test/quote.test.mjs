@@ -45,4 +45,7 @@ test('parseCboe maps the delayed-quote shape and UTC timestamp', () => {
   assert.equal(q.asOf, Date.UTC(2026, 6, 24, 15, 4, 35))
   assert.equal(parseCboe({ data: {} }), null)
   assert.equal(parseCboe(null), null)
+  /* delisted symbols return an all-zeros record — must be rejected */
+  assert.equal(parseCboe({ timestamp: '2026-05-16 10:33:56', data: { current_price: 0.0, prev_day_close: 63.8 } }), null)
+  assert.equal(parseCboe({ timestamp: '2026-05-16 10:33:56', data: { current_price: -1, prev_day_close: 63.8 } }), null)
 })

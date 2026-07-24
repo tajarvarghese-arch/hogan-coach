@@ -20,7 +20,7 @@ const seedBook = [
   { sym: 'CAT',  name: 'CATERPILLAR',      yh: 'CAT',  qty: -240,   avg: 981.504458,  last: 894.005005,  prevClose: 864.300000 },
   { sym: 'COST', name: 'COSTCO',           yh: 'COST', qty: -510,   avg: 948.973608,  last: 927.674988,  prevClose: 935.800000 },
   { sym: 'CRWV', name: 'COREWEAVE',        yh: 'CRWV', qty: -3000,  avg: 116.902587,  last: 79.894997,   prevClose: 73.060000 },
-  { sym: 'FISV', name: 'FISERV',           yh: 'FI',   qty: 1543,   avg: 64.803733,   last: 50.750000,   prevClose: 51.680000 },
+  { sym: 'FISV', name: 'FISERV',           yh: 'FISV', qty: 1543,   avg: 64.803733,   last: 50.750000,   prevClose: 51.680000 },
   { sym: 'GOOG', name: 'ALPHABET',         yh: 'GOOG', qty: -3000,  avg: 346.462531,  last: 348.390015,  prevClose: 351.370000 },
   { sym: 'MDT',  name: 'MEDTRONIC',        yh: 'MDT',  qty: 13000,  avg: 76.661717,   last: 82.370003,   prevClose: 83.290000 },
   { sym: 'MU',   name: 'MICRON',           yh: 'MU',   qty: -150,   avg: 1133.327467, last: 975.971619,  prevClose: 865.460000 },
@@ -951,7 +951,10 @@ export default function CommandCenter() {
         setBook((cur) =>
           cur.map((p) => {
             const q = data.quotes[p.yh]
-            if (!q || typeof q.price !== 'number') return p
+            /* a quote of 0 is dead-feed garbage, never a price — it would
+               mark the position to zero and wreck NETLIQ (seen with the
+               delisted FI ticker returning zeros from Cboe) */
+            if (!q || typeof q.price !== 'number' || !(q.price > 0)) return p
             return {
               ...p,
               last: q.price,

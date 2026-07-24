@@ -28,7 +28,9 @@ async function fetchOne(symbol) {
   const meta = result?.meta
   if (!meta) throw new Error('no meta')
   const price =
-    typeof meta.regularMarketPrice === 'number' ? meta.regularMarketPrice : null
+    typeof meta.regularMarketPrice === 'number' && meta.regularMarketPrice > 0
+      ? meta.regularMarketPrice
+      : null
   const prevClose =
     typeof meta.chartPreviousClose === 'number'
       ? meta.chartPreviousClose
@@ -61,7 +63,9 @@ export function isStale(asOfMs, nowMs) {
 
 export function parseCboe(json) {
   const d = json?.data
-  if (!d || typeof d.current_price !== 'number') return null
+  /* delisted/dead symbols come back as an all-zeros record (seen with
+     FI after the FISV rename) — a non-positive price is never real */
+  if (!d || typeof d.current_price !== 'number' || !(d.current_price > 0)) return null
   return {
     price: d.current_price,
     prevClose: typeof d.prev_day_close === 'number' ? d.prev_day_close : null,
