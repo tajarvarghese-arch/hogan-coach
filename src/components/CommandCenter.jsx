@@ -15,24 +15,24 @@ import '../styles/command-center.css'
 /* ---------- PORTFOLIO SEED (demoted to a strip) ---------- */
 /* Positions pulled from the connected brokerage; live quotes via /api/quote. */
 const seedBook = [
-  { sym: 'AAPL', name: 'APPLE',            yh: 'AAPL', qty: -1500,  avg: 160.7906,    last: 327.980011,  prevClose: 326.590000 },
-  { sym: 'BSX',  name: 'BOSTON SCIENTIFIC',yh: 'BSX',  qty: 3416,   avg: 73.175,      last: 43.159999,   prevClose: 43.769999 },
-  { sym: 'CAT',  name: 'CATERPILLAR',      yh: 'CAT',  qty: -240,   avg: 981.504458,  last: 894.005005,  prevClose: 864.300000 },
-  { sym: 'COST', name: 'COSTCO',           yh: 'COST', qty: -510,   avg: 948.973608,  last: 927.674988,  prevClose: 935.800000 },
-  { sym: 'CRWV', name: 'COREWEAVE',        yh: 'CRWV', qty: -3000,  avg: 116.902587,  last: 79.894997,   prevClose: 73.060000 },
-  { sym: 'FISV', name: 'FISERV',           yh: 'FISV', qty: 1543,   avg: 64.803733,   last: 50.750000,   prevClose: 51.680000 },
-  { sym: 'GOOG', name: 'ALPHABET',         yh: 'GOOG', qty: -3000,  avg: 346.462531,  last: 348.390015,  prevClose: 351.370000 },
-  { sym: 'MDT',  name: 'MEDTRONIC',        yh: 'MDT',  qty: 13000,  avg: 76.661717,   last: 82.370003,   prevClose: 83.290000 },
-  { sym: 'MU',   name: 'MICRON',           yh: 'MU',   qty: -150,   avg: 1133.327467, last: 975.971619,  prevClose: 865.460000 },
-  { sym: 'NBIS', name: 'NEBIUS',           yh: 'NBIS', qty: -500,   avg: 276.89748,   last: 214.199997,  prevClose: 182.620000 },
-  { sym: 'NFLX', name: 'NETFLIX',          yh: 'NFLX', qty: -10000, avg: 73.222288,   last: 66.860001,   prevClose: 67.600000 },
-  { sym: 'OKLO', name: 'OKLO',             yh: 'OKLO', qty: -600,   avg: 174.296667,  last: 43.910000,   prevClose: 41.510000 },
-  { sym: 'PLSE', name: 'PULSE BIOSCIENCES',yh: 'PLSE', qty: 1488,   avg: 17.75,       last: 30.620001,   prevClose: 28.960000 },
-  { sym: 'SBUX', name: 'STARBUCKS',        yh: 'SBUX', qty: -1200,  avg: 114.746808,  last: 104.739998,  prevClose: 104.810000 },
-  { sym: 'SNDK', name: 'SANDISK',          yh: 'SNDK', qty: -62,    avg: 2275.808871, last: 1574.310059, prevClose: 1390.950000 },
-  { sym: 'UNH',  name: 'UNITEDHEALTH',     yh: 'UNH',  qty: 15834,  avg: 294.204548,  last: 434.989990,  prevClose: 421.550000 },
+  { sym: 'AAPL', name: 'APPLE',            yh: 'AAPL', qty: -1500, avg: 160.7906,     last: 331.19989,     prevClose: 321.66 },
+  { sym: 'BSX', name: 'BOSTON SCIENTIFIC', yh: 'BSX', qty: 3416,   avg: 73.175,       last: 44.564999,     prevClose: 43.58 },
+  { sym: 'CAT', name: 'CATERPILLAR',       yh: 'CAT', qty: -240,   avg: 981.504457,   last: 887.840027,    prevClose: 894.54 },
+  { sym: 'COST', name: 'COSTCO',           yh: 'COST', qty: -510,  avg: 948.973608,   last: 930.578918,    prevClose: 924.590027 },
+  { sym: 'CRWV', name: 'COREWEAVE',        yh: 'CRWV', qty: -3000, avg: 116.902587,   last: 74.910004,     prevClose: 81.1 },
+  { sym: 'FISV', name: 'FISERV',           yh: 'FISV', qty: 1543,  avg: 64.803733,    last: 51.5,          prevClose: 49.97 },
+  { sym: 'GOOG', name: 'ALPHABET',         yh: 'GOOG', qty: -3000, avg: 346.462531,   last: 319.48999,     prevClose: 318.34 },
+  { sym: 'MDT', name: 'MEDTRONIC',         yh: 'MDT', qty: 13000,  avg: 76.661717,    last: 83.510002,     prevClose: 82.01 },
+  { sym: 'MU', name: 'MICRON',             yh: 'MU', qty: -150,    avg: 1133.327467,  last: 938.52002,     prevClose: 990.21 },
+  { sym: 'NBIS', name: 'NEBIUS',           yh: 'NBIS', qty: -500,  avg: 276.89748,    last: 199.085007,    prevClose: 220.97 },
+  { sym: 'NFLX', name: 'NETFLIX',          yh: 'NFLX', qty: -10000,avg: 73.222288,    last: 69.830002,     prevClose: 68.89 },
+  { sym: 'OKLO', name: 'OKLO',             yh: 'OKLO', qty: -600,  avg: 174.296667,   last: 41.310001,     prevClose: 44.0 },
+  { sym: 'PLSE', name: 'PULSE BIOSCIENCES',yh: 'PLSE', qty: 1488,  avg: 17.75,        last: 30.85,         prevClose: 31.0 },
+  { sym: 'SBUX', name: 'STARBUCKS',        yh: 'SBUX', qty: -1200, avg: 114.746808,   last: 104.660004,    prevClose: 103.21 },
+  { sym: 'SNDK', name: 'SANDISK',          yh: 'SNDK', qty: -62,   avg: 2275.808871,  last: 1493.859985,   prevClose: 1610.33 },
+  { sym: 'UNH', name: 'UNITEDHEALTH',      yh: 'UNH', qty: 15834,  avg: 294.204548,   last: 422.290009,    prevClose: 423.56 },
 ]
-const netLiqSeed = 9672143.19
+const netLiqSeed = 9588213.8
 const symbolsParam = seedBook.map((p) => p.yh).join(',')
 
 /* ---------- storage keys ---------- */
