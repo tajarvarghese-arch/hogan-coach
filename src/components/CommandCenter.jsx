@@ -1887,14 +1887,10 @@ export default function CommandCenter() {
             ) : (
               (() => {
                 const DOW = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
-                /* pip tiers: full = goal cleared, faint = halfway there,
-                   near-black = logged but little, hollow = no data */
-                const pipStyle = (v, goal, rgb) => {
-                  if (v == null) return undefined
-                  if (v >= goal) return { background: `rgb(${rgb})` }
-                  if (v >= goal / 2) return { background: `rgba(${rgb}, 0.30)` }
-                  return { background: 'rgba(255, 255, 255, 0.05)' }
-                }
+                /* pip tiers: hit = goal cleared (lit phosphor), mid = halfway,
+                   low = logged but little, hollow = no data */
+                const pipTier = (v, goal) =>
+                  v == null ? '' : v >= goal ? 'hit' : v >= goal / 2 ? 'mid' : 'low'
                 const cellTitle = (c) =>
                   `${fmtDateW(c.iso)} · ${c.steps != null ? c.steps.toLocaleString() : '—'} steps · ${c.ex != null ? c.ex : '—'} min`
                 const cur = heatCal.cur
@@ -1918,8 +1914,8 @@ export default function CommandCenter() {
                                   className={`${c.today ? 'today' : ''} ${c.future ? 'future' : ''} ${has ? 'has' : ''}`}
                                   title={cellTitle(c)}>
                                   {has && <>
-                                    <em style={pipStyle(c.steps, STEP_GOAL, '255, 171, 0')} />
-                                    <em style={pipStyle(c.ex, EX_GOAL, '61, 220, 132')} />
+                                    <em className={`s ${pipTier(c.steps, STEP_GOAL)}`} />
+                                    <em className={`e ${pipTier(c.ex, EX_GOAL)}`} />
                                   </>}
                                 </i>
                               )
