@@ -354,6 +354,13 @@ const seedWeek = [
   ]},
 ]
 
+/* Vitals thresholds — a day counts when it clears the bar; a week is
+   GOOD when 10K steps landed 5× and 30 min of exercise landed 4×. */
+const STEP_GOAL = 10000
+const EX_GOAL = 30
+const STEP_WK = 5
+const EX_WK = 4
+
 /* Streak habits — tap cells to log; add your own in-app. */
 const seedStreaks = {
   habits: [
@@ -1161,24 +1168,9 @@ export default function CommandCenter() {
   }))
   const visibleHabits = streaks.habits.filter((h) => !h.del)
 
-  /* vitals history — last 28 days shaped for the bar tracker */
-  const vitalsHist = useMemo(() => {
-    if (!vitals) return null
-    const series = last28.map((iso) => ({ iso, steps: vitals[iso]?.steps, exercise: vitals[iso]?.exercise }))
-    const stepVals = series.map((d) => d.steps).filter((n) => typeof n === 'number')
-    const exVals = series.map((d) => d.exercise).filter((n) => typeof n === 'number')
-    const logged = series.filter((d) => d.steps != null || d.exercise != null).length
-    const avg = (a) => (a.length ? Math.round(a.reduce((s, n) => s + n, 0) / a.length) : 0)
-    return {
-      series, logged,
-      maxSteps: Math.max(1, ...stepVals),
-      avgSteps: avg(stepVals),
-      maxEx: Math.max(1, ...exVals),
-      avgEx: avg(exVals),
-    }
-  }, [vitals, last28])
-
-  /* vitals heat calendar — 12 week-columns × 7 weekday-rows per metric */
+  /* threshold calendar — the question is "did I clear the bar?", not
+     "how much did I move?": a day counts when it clears the goal, a
+     week is GOOD when both weekly targets land */
   const heatCal = useMemo(() => {
     if (!vitals) return null
     const dayMs = 86400000
@@ -1186,7 +1178,6 @@ export default function CommandCenter() {
     const dow = (new Date(mid).getDay() + 6) % 7 // Monday = 0
     const thisMonday = mid - dow * dayMs
     const weeks = []
-    let sSum = 0, sC = 0, eSum = 0, eC = 0, maxSteps = 1, maxEx = 1, bestSteps = 0, bestISO = null
     for (let w = 11; w >= 0; w--) {
       const col = []
       for (let d = 0; d < 7; d++) {
@@ -1196,20 +1187,30 @@ export default function CommandCenter() {
         const v = future ? undefined : vitals[iso]
         const steps = typeof v?.steps === 'number' ? v.steps : null
         const ex = typeof v?.exercise === 'number' ? v.exercise : null
-        if (steps != null) {
-          sSum += steps; sC++
-          if (steps > maxSteps) maxSteps = steps
-          if (steps > bestSteps) { bestSteps = steps; bestISO = iso }
-        }
-        if (ex != null) { eSum += ex; eC++; if (ex > maxEx) maxEx = ex }
         col.push({ iso, steps, ex, future, today: iso === todayISO })
       }
       weeks.push(col)
     }
+    /* per-week verdicts; the last column is the current (open) week */
+    const weekMeta = weeks.map((col, i) => {
+      const logged = col.some((c) => c.steps != null || c.ex != null)
+      const sDays = col.filter((c) => (c.steps ?? 0) >= STEP_GOAL).length
+      const eDays = col.filter((c) => (c.ex ?? 0) >= EX_GOAL).length
+      const open = i === weeks.length - 1
+      return { monISO: col[0].iso, logged, sDays, eDays, open, good: !open && sDays >= STEP_WK && eDays >= EX_WK }
+    })
+    const judged = weekMeta.filter((m) => !m.open && m.logged)
+    let streak = 0
+    for (let i = weekMeta.length - 2; i >= 0; i--) {
+      if (!weekMeta[i].logged || !weekMeta[i].good) break
+      streak++
+    }
     return {
-      weeks, maxSteps, maxEx, bestSteps, bestISO,
-      avgSteps: sC ? Math.round(sSum / sC) : 0,
-      avgEx: eC ? Math.round(eSum / eC) : 0,
+      weeks, weekMeta, streak,
+      goodWks: judged.filter((m) => m.good).length,
+      judgedWks: judged.length,
+      cur: weekMeta[weekMeta.length - 1],
+      lastJudged: weekMeta.length > 1 && weekMeta[weekMeta.length - 2].logged ? weekMeta[weekMeta.length - 2] : null,
       logged: Object.keys(vitals).length,
     }
   }, [vitals, todayISO]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -1875,7 +1876,7 @@ export default function CommandCenter() {
                     STEPS <b>{v.steps != null ? v.steps.toLocaleString() : '—'}</b>
                     {' · EX '}<b>{v.exercise != null ? `${v.exercise}M` : '—'}</b>
                     {yda ? ' · YDA' : ''}
-                    {vitalsHist ? <> · 28D AVG <b>{vitalsHist.avgSteps.toLocaleString()}</b></> : null}
+                    {heatCal ? <> · WK <b>{heatCal.cur.sDays}/{STEP_WK}</b>·<b>{heatCal.cur.eDays}/{EX_WK}</b></> : null}
                   </>)
                 })()}
                 <span className="chev"> &nbsp;{vitalsOpen ? '▲ HIDE' : '▼ CHARTS'}</span>
@@ -1886,43 +1887,68 @@ export default function CommandCenter() {
             ) : (
               (() => {
                 const DOW = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
-                const grid = (metric, max, rgb) => (
-                  <div className="heatcal">
-                    <div className="dowrail" aria-hidden="true">
-                      {DOW.map((d, i) => <u key={i}>{d}</u>)}
+                /* pip tiers: full = goal cleared, faint = halfway there,
+                   near-black = logged but little, hollow = no data */
+                const pipStyle = (v, goal, rgb) => {
+                  if (v == null) return undefined
+                  if (v >= goal) return { background: `rgb(${rgb})` }
+                  if (v >= goal / 2) return { background: `rgba(${rgb}, 0.30)` }
+                  return { background: 'rgba(255, 255, 255, 0.05)' }
+                }
+                const cellTitle = (c) =>
+                  `${fmtDateW(c.iso)} · ${c.steps != null ? c.steps.toLocaleString() : '—'} steps · ${c.ex != null ? c.ex : '—'} min`
+                const cur = heatCal.cur
+                return (
+                  <div className="chart-block">
+                    <div className="chart-label">
+                      <u>10K STEPS <b className="lg-s">▀</b> · 30 MIN <b className="lg-e">▄</b> · 12W</u>
+                      <span>
+                        GOOD WKS <b>{heatCal.goodWks}/{heatCal.judgedWks}</b>
+                        {heatCal.streak > 0 ? <> · STREAK <b className="lg-e">{heatCal.streak}W</b></> : null}
+                      </span>
                     </div>
-                    <div className="cells">
-                      {heatCal.weeks.map((col, wi) =>
-                        col.map((c) => {
-                          const v = c[metric]
-                          const a = v != null ? 0.14 + 0.76 * (v / max) : 0
-                          return (
-                            <i key={c.iso}
-                              className={`${c.today ? 'today' : ''} ${c.future ? 'future' : ''}`}
-                              title={`${fmtDateW(c.iso)} · ${v != null ? (metric === 'steps' ? v.toLocaleString() + ' steps' : v + ' min') : 'no data'}`}
-                              style={v != null ? { background: `rgba(${rgb}, ${a.toFixed(2)})` } : undefined} />
-                          )
-                        })
-                      )}
+                    <div className="heatcal">
+                      <div className="dowrail" aria-hidden="true">
+                        {DOW.map((d, i) => <u key={i}>{d}</u>)}
+                      </div>
+                      <div className="colwrap">
+                        <div className="cells">
+                          {heatCal.weeks.map((col) =>
+                            col.map((c) => {
+                              const has = !c.future && (c.steps != null || c.ex != null)
+                              return (
+                                <i key={c.iso}
+                                  className={`${c.today ? 'today' : ''} ${c.future ? 'future' : ''} ${has ? 'has' : ''}`}
+                                  title={cellTitle(c)}>
+                                  {has && <>
+                                    <em style={pipStyle(c.steps, STEP_GOAL, '255, 171, 0')} />
+                                    <em style={pipStyle(c.ex, EX_GOAL, '61, 220, 132')} />
+                                  </>}
+                                </i>
+                              )
+                            })
+                          )}
+                        </div>
+                        <div className="wkrail" aria-hidden="true">
+                          {heatCal.weekMeta.map((m) => (
+                            <b key={m.monISO}
+                              className={m.open ? 'open' : m.good ? 'good' : ''}
+                              title={`WK OF ${fmtDate(m.monISO)} — ${m.open ? 'OPEN' : !m.logged ? 'NO DATA' : m.good ? 'GOOD' : 'MISSED'} (${m.sDays}/${STEP_WK} · ${m.eDays}/${EX_WK})`}>
+                              {m.open ? '◌' : !m.logged ? ' ' : m.good ? '■' : '·'}
+                            </b>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="wk-words">
+                      THIS WK <b className="lg-s">{cur.sDays}/{STEP_WK}</b> · <b className="lg-e">{cur.eDays}/{EX_WK}</b> · OPEN
+                      {heatCal.lastJudged ? <>
+                        {' — LAST WK '}
+                        <b className={heatCal.lastJudged.good ? 'lg-e' : 'lg-miss'}>{heatCal.lastJudged.good ? 'GOOD' : 'MISSED'}</b>
+                      </> : null}
                     </div>
                   </div>
                 )
-                return (<>
-                  <div className="chart-block">
-                    <div className="chart-label">
-                      <u>STEPS · 12W</u>
-                      <span>AVG <b>{heatCal.avgSteps.toLocaleString()}</b> · BEST <b>{heatCal.bestSteps.toLocaleString()}</b>{heatCal.bestISO ? ` · ${fmtDate(heatCal.bestISO)}` : ''}</span>
-                    </div>
-                    {grid('steps', heatCal.maxSteps, '255, 171, 0')}
-                  </div>
-                  <div className="chart-block">
-                    <div className="chart-label">
-                      <u>EXERCISE · 12W</u>
-                      <span>AVG <b>{heatCal.avgEx}</b> MIN/DAY</span>
-                    </div>
-                    {grid('ex', heatCal.maxEx, '61, 220, 132')}
-                  </div>
-                </>)
               })()
             ))}
           </section>

@@ -1255,3 +1255,37 @@ table.book tr.subtotal td:first-child {
 
 /* bottom-of-sheet tide panel */
 .tide-panel { padding: 8px 12px 6px; }
+
+/* threshold vitals: dual-pip day cells + week-verdict rail */
+.heatcal .colwrap { display: flex; flex-direction: column; gap: 3px; }
+.heatcal .cells i.has {
+  border: 0;
+  display: flex;
+  flex-direction: column;
+}
+.heatcal .cells i.has.today { border: 1px solid var(--amber); }
+.heatcal .cells i.has em { flex: 1; }
+.wkrail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 12px;
+  gap: 2px;
+}
+.wkrail b {
+  font-weight: 400;
+  font-size: 10px;
+  line-height: 11px;
+  text-align: center;
+  color: var(--dim-2);
+}
+.wkrail b.good { color: var(--up); }
+.wkrail b.open { color: var(--amber); }
+.lg-s { color: var(--amber); font-weight: 700; }
+.lg-e { color: var(--up); font-weight: 700; }
+.lg-miss { color: var(--down); font-weight: 700; }
+.wk-words {
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  color: var(--dim);
+  padding-top: 7px;
+}
