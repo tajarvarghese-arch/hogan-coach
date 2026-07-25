@@ -1902,10 +1902,6 @@ export default function CommandCenter() {
                   <div className="chart-block">
                     <div className="chart-label">
                       <u>10K STEPS <b className="lg-s">▀</b> · 30 MIN <b className="lg-e">▄</b> · 12W</u>
-                      <span>
-                        GOOD WKS <b>{heatCal.goodWks}/{heatCal.judgedWks}</b>
-                        {heatCal.streak > 0 ? <> · STREAK <b className="lg-e">{heatCal.streak}W</b></> : null}
-                      </span>
                     </div>
                     <div className="heatcal">
                       <div className="dowrail" aria-hidden="true">
@@ -1939,13 +1935,39 @@ export default function CommandCenter() {
                           ))}
                         </div>
                       </div>
-                    </div>
-                    <div className="wk-words">
-                      THIS WK <b className="lg-s">{cur.sDays}/{STEP_WK}</b> · <b className="lg-e">{cur.eDays}/{EX_WK}</b> · OPEN
-                      {heatCal.lastJudged ? <>
-                        {' — LAST WK '}
-                        <b className={heatCal.lastJudged.good ? 'lg-e' : 'lg-miss'}>{heatCal.lastJudged.good ? 'GOOD' : 'MISSED'}</b>
-                      </> : null}
+                      {/* week scorecard — the week you can still win, as lit
+                          instrument keys: filled = landed, breathing = the
+                          next one to earn */}
+                      <div className="vit-side">
+                        <u className="vs-head">THIS WK · OPEN</u>
+                        <div className="vs-meter">
+                          <u>10K DAYS</u>
+                          <div className="vs-boxes s" role="img" aria-label={`${cur.sDays} of ${STEP_WK} step days`}>
+                            {Array.from({ length: STEP_WK }, (_, i) => (
+                              <i key={i}
+                                className={i < cur.sDays ? 'lit' : i === cur.sDays ? 'next' : ''}
+                                style={i < cur.sDays ? { animationDelay: `${i * 90}ms` } : undefined} />
+                            ))}
+                            <b className="lg-s">{cur.sDays}/{STEP_WK}</b>
+                          </div>
+                        </div>
+                        <div className="vs-meter">
+                          <u>30M DAYS</u>
+                          <div className="vs-boxes e" role="img" aria-label={`${cur.eDays} of ${EX_WK} exercise days`}>
+                            {Array.from({ length: EX_WK }, (_, i) => (
+                              <i key={i}
+                                className={i < cur.eDays ? 'lit' : i === cur.eDays ? 'next' : ''}
+                                style={i < cur.eDays ? { animationDelay: `${i * 90}ms` } : undefined} />
+                            ))}
+                            <b className="lg-e">{cur.eDays}/{EX_WK}</b>
+                          </div>
+                        </div>
+                        <div className="vs-stats">
+                          {heatCal.lastJudged && <>LAST WK <b className={heatCal.lastJudged.good ? 'lg-e' : 'lg-miss'}>{heatCal.lastJudged.good ? 'GOOD' : 'MISSED'}</b><br /></>}
+                          GOOD WKS <b>{heatCal.goodWks}/{heatCal.judgedWks}</b><br />
+                          STREAK <b className={heatCal.streak > 0 ? 'vs-streak on' : ''}>{heatCal.streak}W</b>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )
