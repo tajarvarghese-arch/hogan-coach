@@ -1167,14 +1167,14 @@ table.book tr.subtotal td:first-child {
   display: grid;
   grid-auto-flow: column;
   grid-template-rows: repeat(7, 1fr);
-  grid-auto-columns: 12px;
+  grid-auto-columns: 1fr;
   gap: 2px;
   flex: 1;
+  width: 100%;
 }
 .heatcal .cells i {
-  width: 12px;
-  /* height comes from the 1fr grid rows — the blocks stretch so the
-     calendar runs the full length of the scorecard field beside it */
+  /* both dimensions come from the fr grid — the blocks stretch to
+     fill whatever share of the panel the calendar half is given */
   border: 1px solid var(--line);
   font-style: normal;
 }
@@ -1274,8 +1274,9 @@ table.book tr.subtotal td:first-child {
 .wkrail {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: 12px;
+  grid-auto-columns: 1fr;
   gap: 2px;
+  width: 100%;
 }
 .wkrail b {
   font-weight: 400;
@@ -1303,10 +1304,10 @@ table.book tr.subtotal td:first-child {
 /* symmetric halves: the calendar and the scorecard sit as twin cells
    with matched padding; the phosphor lives in the markers themselves */
 .heatcal { gap: 10px; }
-.crt-cell { position: relative; padding: 10px; }
-.crt-cell.hc-grid { display: flex; gap: 7px; flex: 0 0 auto; }
+.crt-cell { position: relative; padding: 9px; }
+.crt-cell.hc-grid { display: flex; gap: 7px; flex: 1.4 1 0; min-width: 0; }
 .vit-side {
-  flex: 1;
+  flex: 1 1 0;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -1378,8 +1379,8 @@ table.book tr.subtotal td:first-child {
 .heatcal .cells i.has em.s.hit {
   background: var(--amber);
   box-shadow:
-    inset 0 0 0 1px rgba(255, 224, 130, 0.45),
-    inset 0 0 4px rgba(255, 255, 255, 0.3),
+    inset 0 0 0 1px rgba(255, 193, 51, 0.5),
+    inset 0 0 4px rgba(255, 255, 255, 0.22),
     0 0 3px rgba(255, 171, 0, 0.85),
     0 0 8px rgba(255, 171, 0, 0.4);
 }
@@ -1387,7 +1388,7 @@ table.book tr.subtotal td:first-child {
   background: var(--up);
   box-shadow:
     inset 0 0 0 1px rgba(190, 255, 215, 0.45),
-    inset 0 0 4px rgba(255, 255, 255, 0.3),
+    inset 0 0 4px rgba(255, 255, 255, 0.22),
     0 0 3px rgba(61, 220, 132, 0.85),
     0 0 8px rgba(61, 220, 132, 0.4);
 }
@@ -1400,9 +1401,9 @@ table.book tr.subtotal td:first-child {
   box-shadow: inset 0 0 0 1px rgba(61, 220, 132, 0.3);
 }
 .heatcal .cells i.has em.low { background: rgba(255, 255, 255, 0.05); }
-.heatcal .cells i:nth-child(3n) em.hit { filter: brightness(1.14); }
-.heatcal .cells i:nth-child(5n + 1) em.hit { filter: brightness(0.86); }
-.heatcal .cells i:nth-child(7n + 3) em.hit { filter: brightness(1.05) saturate(1.15); }
+.heatcal .cells i:nth-child(3n) em.hit { opacity: 0.98; }
+.heatcal .cells i:nth-child(5n + 1) em.hit { opacity: 0.82; }
+.heatcal .cells i:nth-child(7n + 3) em.hit { opacity: 0.9; }
 .heatcal .cells i.today em.hit { animation: px-shimmer 2.6s ease-in-out infinite; }
 .wkrail b.good { text-shadow: 0 0 5px rgba(61, 220, 132, 0.6); }
 @keyframes px-shimmer {
@@ -1413,13 +1414,13 @@ table.book tr.subtotal td:first-child {
 .vs-boxes.s i.lit {
   outline: 1px solid rgba(255, 171, 0, 0.35);
   outline-offset: 1px;
-  box-shadow: inset 0 0 0 1px rgba(255, 224, 130, 0.5), inset 0 0 4px rgba(255, 255, 255, 0.35), inset 0 -2px 0 rgba(0, 0, 0, 0.3), 0 0 5px rgba(255, 171, 0, 0.8), 0 0 13px rgba(255, 171, 0, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(255, 193, 51, 0.55), inset 0 0 4px rgba(255, 255, 255, 0.25), inset 0 -2px 0 rgba(0, 0, 0, 0.3), 0 0 5px rgba(255, 171, 0, 0.8), 0 0 13px rgba(255, 171, 0, 0.35);
   animation: vs-pop 0.4s cubic-bezier(0.2, 1.6, 0.4, 1) backwards, px-shimmer 3.4s ease-in-out 0.6s infinite;
 }
 .vs-boxes.e i.lit {
   outline: 1px solid rgba(61, 220, 132, 0.35);
   outline-offset: 1px;
-  box-shadow: inset 0 0 0 1px rgba(190, 255, 215, 0.5), inset 0 0 4px rgba(255, 255, 255, 0.35), inset 0 -2px 0 rgba(0, 0, 0, 0.3), 0 0 5px rgba(61, 220, 132, 0.75), 0 0 13px rgba(61, 220, 132, 0.3);
+  box-shadow: inset 0 0 0 1px rgba(190, 255, 215, 0.5), inset 0 0 4px rgba(255, 255, 255, 0.25), inset 0 -2px 0 rgba(0, 0, 0, 0.3), 0 0 5px rgba(61, 220, 132, 0.75), 0 0 13px rgba(61, 220, 132, 0.3);
   animation: vs-pop 0.4s cubic-bezier(0.2, 1.6, 0.4, 1) backwards, px-shimmer 3.4s ease-in-out 0.6s infinite;
 }
 

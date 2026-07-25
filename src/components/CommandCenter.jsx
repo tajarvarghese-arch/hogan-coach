@@ -557,7 +557,7 @@ export default function CommandCenter() {
   const [logExpanded, setLogExpanded] = useState(false)
   const [wire, setWire] = useState([])
   const [vitals, setVitals] = useState(null)
-  const [vitalsOpen, setVitalsOpen] = useState(false)
+  const [vitalsOpen, setVitalsOpen] = useState(true)
   const [calDays, setCalDays] = useState(null)
   const [calTs, setCalTs] = useState(null)
   const [syncKey, setSyncKey] = useState(() => loadStr(K.syncKey, ''))
