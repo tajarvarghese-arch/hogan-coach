@@ -1904,6 +1904,7 @@ export default function CommandCenter() {
                       <u>10K STEPS <b className="lg-s">▀</b> · 30 MIN <b className="lg-e">▄</b> · 12W</u>
                     </div>
                     <div className="heatcal">
+                      <div className="crt-cell hc-grid">
                       <div className="dowrail" aria-hidden="true">
                         {DOW.map((d, i) => <u key={i}>{d}</u>)}
                       </div>
@@ -1935,10 +1936,11 @@ export default function CommandCenter() {
                           ))}
                         </div>
                       </div>
+                      </div>
                       {/* week scorecard — the week you can still win, as lit
                           instrument keys: filled = landed, breathing = the
                           next one to earn */}
-                      <div className="vit-side">
+                      <div className="crt-cell vit-side">
                         <u className="vs-head">THIS WK · OPEN</u>
                         <div className="vs-meter">
                           <u>10K DAYS</u>

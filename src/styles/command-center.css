@@ -1294,14 +1294,41 @@ table.book tr.subtotal td:first-child {
    lit instrument keys: bevel gives them physical depth, landed days
    pop in with a cascade, the next key to earn breathes, the streak
    glows. All motion honors reduced-motion; night watch dims it. */
+/* symmetric CRT cells: the calendar and the scorecard sit in twin
+   frames edged with phosphor pixels — a dithered matrix-style border
+   that crawls slowly, like the tube is holding the frame together */
+.heatcal { gap: 10px; }
+.crt-cell {
+  --crt-px: rgba(61, 220, 132, 0.5);
+  --crt-px-dim: rgba(61, 220, 132, 0.18);
+  position: relative;
+  padding: 10px;
+}
+.crt-cell.hc-grid { display: flex; gap: 7px; flex: 0 0 auto; }
+.crt-cell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(90deg, var(--crt-px) 0 2px, transparent 2px 5px, var(--crt-px-dim) 5px 7px, transparent 7px 12px) 0 0 / 100% 2px no-repeat,
+    repeating-linear-gradient(90deg, transparent 0 3px, var(--crt-px-dim) 3px 5px, transparent 5px 8px, var(--crt-px) 8px 10px, transparent 10px 12px) 0 100% / 100% 2px no-repeat,
+    repeating-linear-gradient(180deg, var(--crt-px) 0 2px, transparent 2px 6px, var(--crt-px-dim) 6px 8px, transparent 8px 12px) 0 0 / 2px 100% no-repeat,
+    repeating-linear-gradient(180deg, transparent 0 4px, var(--crt-px) 4px 6px, transparent 6px 9px, var(--crt-px-dim) 9px 11px, transparent 11px 12px) 100% 0 / 2px 100% no-repeat;
+  filter: drop-shadow(0 0 3px rgba(61, 220, 132, 0.28));
+  animation: crt-crawl 3.6s steps(12) infinite;
+}
+@keyframes crt-crawl {
+  to {
+    background-position: 12px 0, -12px 100%, 0 -12px, 100% 12px;
+  }
+}
 .vit-side {
   flex: 1;
   min-width: 0;
-  margin-left: 4px;
-  border-left: 1px solid var(--line);
-  padding-left: 12px;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 8px;
 }
 .vs-head { text-decoration: none; font-size: 9px; letter-spacing: 1px; color: var(--dim); }
@@ -1367,7 +1394,8 @@ table.book tr.subtotal td:first-child {
 .term.night .vs-boxes i.lit { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -2px 0 rgba(0, 0, 0, 0.35); }
 .term.night .vs-boxes i.next, .term.night .vs-streak.on, .term.night .wkrail b.open { animation: none; }
 .term.night .wkrail b.open { opacity: 0.7; }
+.term.night .crt-cell::before { animation: none; filter: none; opacity: 0.6; }
 
 @media (prefers-reduced-motion: reduce) {
-  .vs-boxes i.lit, .vs-boxes i.next, .vs-streak.on, .wkrail b.open { animation: none; }
+  .vs-boxes i.lit, .vs-boxes i.next, .vs-streak.on, .wkrail b.open, .crt-cell::before { animation: none; }
 }
