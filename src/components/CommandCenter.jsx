@@ -1814,7 +1814,7 @@ export default function CommandCenter() {
                     ))}
                   </span>
                   <span className={`streak-today ${doneToday ? 'on' : ''}`}>{doneToday ? '✓' : ''}</span>
-                  <span className="streak-count">{streakCount(h.id)}D</span>
+                  {(() => { const n = streakCount(h.id); return <span className={`streak-count ${n > 0 ? 'lit' : ''}`}>{n}D</span> })()}
                 </button>
               )
             })}
