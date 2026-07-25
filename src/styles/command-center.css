@@ -289,6 +289,11 @@
   .bar-stat.date { border-bottom: 1px solid var(--line); }
   .bar-stat.fc { padding: 7px 8px; align-items: center; }
   .bar-stat.fc:last-child { border-right: 0; }
+  /* rows justify symmetrically from the page edges: first column hugs
+     the left, last column hugs the right, middles stay centered */
+  .bar-stat.now { align-items: flex-end; text-align: right; }
+  .bar-stat.now + .bar-stat.fc { align-items: flex-start; }
+  .bar-stat.fc:last-child { align-items: flex-end; }
   .bar-clock { border-left: 0; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
   .bar-clock time { font-size: 13px; }
 
@@ -774,6 +779,7 @@ table.book tr.subtotal td:first-child {
   padding: 6px 12px 7px;
 }
 .wx-foot span:first-child { border-right: 1px solid var(--line); }
+.wx-foot span:last-child { justify-content: flex-end; }
 
 
 /* ---------- HORIZON ---------- */
