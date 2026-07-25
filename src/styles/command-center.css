@@ -767,9 +767,13 @@ table.book tr.subtotal td:first-child {
   border-bottom: 1px solid var(--line);
   white-space: nowrap;
   overflow: hidden;
+  /* segments mirror off the panel edges: temp hugs left, wind hugs
+     right, the rest spread evenly between */
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
 }
-.wx-line u { margin-left: 6px; }
-.wx-line s { text-decoration: none; color: var(--dim); margin-left: 6px; }
+.wx-line span { display: inline-flex; align-items: baseline; gap: 5px; }
 .tide-hero .muted { display: block; padding: 18px 0; }
 .wx-foot { display: grid; grid-template-columns: 1fr 1fr; }
 .wx-foot span {

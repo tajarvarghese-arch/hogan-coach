@@ -1508,11 +1508,11 @@ export default function CommandCenter() {
               instrument (next H/L annotated on it), sun + moon on a shared rail. */}
           <div className="wx-strip">
             <div className="wx-line">
-              <b>{wx ? `${wx.temp}°F` : '—'}</b>
-              <u>FEELS</u> <b>{wx ? `${wx.feels}°` : '—'}</b>
-              <s>·</s> <b>{wx ? `${wx.hi}°/${wx.lo}°` : '—'}</b>
-              <u>RAIN</u> <b>{wx ? `${wx.precip}%` : '—'}</b>
-              <u>WIND</u> <b>{wx ? `${wx.wind} MPH` : '—'}</b>
+              <span><b>{wx ? `${wx.temp}°F` : '—'}</b></span>
+              <span><u>FEELS</u> <b>{wx ? `${wx.feels}°` : '—'}</b></span>
+              <span><b>{wx ? `${wx.hi}°/${wx.lo}°` : '—'}</b></span>
+              <span><u>RAIN</u> <b>{wx ? `${wx.precip}%` : '—'}</b></span>
+              <span><u>WIND</u> <b>{wx ? `${wx.wind} MPH` : '—'}</b></span>
             </div>
             <div className="wx-foot">
               <span><u>SUN</u><b>{wx ? `${wx.sunrise}–${wx.sunset}` : '—'}</b></span>
