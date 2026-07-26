@@ -1418,16 +1418,18 @@ table.book tr.subtotal td:first-child {
   width: 50%;
   aspect-ratio: 1;
   border-radius: 50%;
-  /* neon blue in a wide dark well: with a pin present the core reads
-     as a green annulus around darkness — blue only ever borders black */
-  background: #00d8ff;
+  /* violet-blue #7c66ff — chosen by colorimetry: dE >150 from both
+     the amber ring and green core, 2.3:1 luminance vs the core, 5:1
+     pop from the black well, and no collision with family cyan,
+     flare violet, or loss red */
+  background: #7c66ff;
   box-shadow:
     0 0 0 2.5px rgba(5, 4, 3, 0.95),
-    0 0 6px rgba(0, 216, 255, 0.95),
-    0 0 12px rgba(0, 216, 255, 0.5);
+    0 0 6px rgba(124, 102, 255, 0.95),
+    0 0 12px rgba(124, 102, 255, 0.5);
 }
-.lg-lift { color: #00d8ff; font-weight: 700; text-shadow: 0 0 6px rgba(0, 216, 255, 0.5); }
-.term.night .heatcal .cells i.has .pin { box-shadow: 0 0 0 1.5px rgba(5, 4, 3, 0.92); background: #35a8c8; }
+.lg-lift { color: #7c66ff; font-weight: 700; text-shadow: 0 0 6px rgba(124, 102, 255, 0.5); }
+.term.night .heatcal .cells i.has .pin { box-shadow: 0 0 0 2.5px rgba(5, 4, 3, 0.92); background: #6552d8; }
 .term.night .lg-lift { text-shadow: none; }
 .heatcal .cells i.has:nth-child(3n) { opacity: 0.98; }
 .heatcal .cells i.has:nth-child(5n + 1) { opacity: 0.85; }
