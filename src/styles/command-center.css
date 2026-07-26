@@ -1624,3 +1624,21 @@ table.book tr.subtotal td:first-child {
 .eyelog-list p span { color: var(--dim); font-size: 9px; letter-spacing: 1px; margin-right: 9px; }
 .term.night .eyelog-head h2, .term.night .eye-mark.on { text-shadow: none; }
 .term.night .eyecal .ecells i.on { box-shadow: none; }
+
+/* lift meter — third target in the week scorecard, violet-blue keys */
+.vs-boxes.l i.lit {
+  background: #7c66ff;
+  border-color: #7c66ff;
+  box-shadow: inset 0 0 0 1px rgba(180, 165, 255, 0.5), inset 0 0 4px rgba(255, 255, 255, 0.25), inset 0 -2px 0 rgba(0, 0, 0, 0.3), 0 0 5px rgba(124, 102, 255, 0.8), 0 0 13px rgba(124, 102, 255, 0.35);
+  animation: vs-pop 0.4s cubic-bezier(0.2, 1.6, 0.4, 1) backwards, px-shimmer 3.4s ease-in-out 0.6s infinite;
+}
+.vs-boxes.l i.next { animation: vs-breathe-l 2.4s ease-in-out infinite; }
+@keyframes vs-breathe-l {
+  0%, 100% { border-color: var(--line-bright); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), inset 0 -2px 0 rgba(0, 0, 0, 0.55); }
+  50% { border-color: #7c66ff; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), inset 0 -2px 0 rgba(0, 0, 0, 0.55), 0 0 8px rgba(124, 102, 255, 0.5); }
+}
+.term.night .vs-boxes.l i.lit { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -2px 0 rgba(0, 0, 0, 0.35); animation: none; }
+.term.night .vs-boxes.l i.next { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .vs-boxes.l i.lit, .vs-boxes.l i.next { animation: none; }
+}

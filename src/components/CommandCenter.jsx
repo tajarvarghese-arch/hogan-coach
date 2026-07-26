@@ -361,6 +361,11 @@ const STEP_GOAL = 10000
 const EX_GOAL = 30
 const STEP_WK = 5
 const EX_WK = 4
+/* lifting joined the vitals bar with the 9-week program: 3 sessions a
+   week, counted from the program's first Monday so history isn't
+   retroactively judged on a metric that didn't exist */
+const LIFT_WK = 3
+const LIFT_FROM = '2026-07-27' 
 
 /* Streak habits — tap cells to log; add your own in-app. */
 const seedStreaks = {
@@ -1202,8 +1207,13 @@ export default function CommandCenter() {
       const logged = col.some((c) => c.steps != null || c.ex != null)
       const sDays = col.filter((c) => (c.steps ?? 0) >= STEP_GOAL).length
       const eDays = col.filter((c) => (c.ex ?? 0) >= EX_GOAL).length
+      const lDays = col.filter((c) => c.lift).length
+      const liftApplies = col[0].iso >= LIFT_FROM
       const open = i === weeks.length - 1
-      return { monISO: col[0].iso, logged, sDays, eDays, open, good: !open && sDays >= STEP_WK && eDays >= EX_WK }
+      return {
+        monISO: col[0].iso, logged, sDays, eDays, lDays, liftApplies, open,
+        good: !open && sDays >= STEP_WK && eDays >= EX_WK && (!liftApplies || lDays >= LIFT_WK),
+      }
     })
     const judged = weekMeta.filter((m) => !m.open && m.logged)
     let streak = 0
@@ -1933,7 +1943,7 @@ export default function CommandCenter() {
                     STEPS <b>{v.steps != null ? v.steps.toLocaleString() : '—'}</b>
                     {' · EX '}<b>{v.exercise != null ? `${v.exercise}M` : '—'}</b>
                     {yda ? ' · YDA' : ''}
-                    {heatCal ? <> · WK <b>{heatCal.cur.sDays}/{STEP_WK}</b>·<b>{heatCal.cur.eDays}/{EX_WK}</b></> : null}
+                    {heatCal ? <> · WK <b>{heatCal.cur.sDays}/{STEP_WK}</b>·<b>{heatCal.cur.eDays}/{EX_WK}</b>{heatCal.cur.liftApplies ? <>·<b>{heatCal.cur.lDays}/{LIFT_WK}</b></> : null}</> : null}
                   </>)
                 })()}
                 <span className="chev"> &nbsp;{vitalsOpen ? '▲ HIDE' : '▼ CHARTS'}</span>
@@ -1985,7 +1995,7 @@ export default function CommandCenter() {
                           {heatCal.weekMeta.map((m) => (
                             <b key={m.monISO}
                               className={m.open ? 'open' : m.good ? 'good' : ''}
-                              title={`WK OF ${fmtDate(m.monISO)} — ${m.open ? 'OPEN' : !m.logged ? 'NO DATA' : m.good ? 'GOOD' : 'MISSED'} (${m.sDays}/${STEP_WK} · ${m.eDays}/${EX_WK})`}>
+                              title={`WK OF ${fmtDate(m.monISO)} — ${m.open ? 'OPEN' : !m.logged ? 'NO DATA' : m.good ? 'GOOD' : 'MISSED'} (${m.sDays}/${STEP_WK} · ${m.eDays}/${EX_WK}${m.liftApplies ? ` · ${m.lDays}/${LIFT_WK}` : ''})`}>
                               {m.open ? '◌' : !m.logged ? ' ' : m.good ? '■' : '·'}
                             </b>
                           ))}
@@ -2017,6 +2027,19 @@ export default function CommandCenter() {
                             <b className="lg-e">{cur.eDays}/{EX_WK}</b>
                           </div>
                         </div>
+                        {cur.liftApplies && (
+                          <div className="vs-meter">
+                            <u>LIFTS</u>
+                            <div className="vs-boxes l" role="img" aria-label={`${cur.lDays} of ${LIFT_WK} lift sessions`}>
+                              {Array.from({ length: LIFT_WK }, (_, i) => (
+                                <i key={i}
+                                  className={i < cur.lDays ? 'lit' : i === cur.lDays ? 'next' : ''}
+                                  style={i < cur.lDays ? { animationDelay: `${i * 90}ms` } : undefined} />
+                              ))}
+                              <b className="lg-lift">{cur.lDays}/{LIFT_WK}</b>
+                            </div>
+                          </div>
+                        )}
                         <div className="vs-stats">
                           {heatCal.lastJudged && <>LAST WK <b className={heatCal.lastJudged.good ? 'lg-e' : 'lg-miss'}>{heatCal.lastJudged.good ? 'GOOD' : 'MISSED'}</b> · </>}
                           GOOD WKS <b>{heatCal.goodWks}/{heatCal.judgedWks}</b> · STREAK <b className={heatCal.streak > 0 ? 'vs-streak on' : ''}>{heatCal.streak}W</b>
