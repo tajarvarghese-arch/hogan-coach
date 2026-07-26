@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { mergeState, normTodos, normHorizon, normStreaks, normEyes, sweepDoneTodos } from '../lib/sync'
+import { computeNextBench, mergeState, normTodos, normHorizon, normStreaks, normEyes, normLifts, sweepDoneTodos } from '../lib/sync'
 import { marketState } from '../lib/market'
 import { layoutTreemap } from '../lib/treemap'
 import '../styles/command-center.css'
@@ -43,6 +43,7 @@ const K = {
   horizon: 'tajar-horizon',
   reasons: 'tajar-reasons',
   eyes: 'tajar-eyes',
+  lifts: 'tajar-lifts',
   mkt: 'tajar-markets-open',
   streaks: 'tajar-streaks',
   log: 'tajar-captains-log',
@@ -555,6 +556,7 @@ export default function CommandCenter() {
   const [hzDraft, setHzDraft] = useState('')
   const [reasons, setReasons] = useState(() => load(K.reasons, seedReasons))
   const [eyes, setEyes] = useState(() => normEyes(load(K.eyes, {})))
+  const [lifts, setLifts] = useState(() => normLifts(load(K.lifts, {})))
   const [reasonDraft, setReasonDraft] = useState('')
   const [wx, setWx] = useState(null)
   const [tides, setTides] = useState([])
@@ -727,6 +729,7 @@ export default function CommandCenter() {
   useEffect(() => { try { localStorage.setItem(K.horizon, JSON.stringify(horizon)) } catch {} }, [horizon])
   useEffect(() => { try { localStorage.setItem(K.reasons, JSON.stringify(reasons)) } catch {} }, [reasons])
   useEffect(() => { try { localStorage.setItem(K.eyes, JSON.stringify(eyes)) } catch {} }, [eyes])
+  useEffect(() => { try { localStorage.setItem(K.lifts, JSON.stringify(lifts)) } catch {} }, [lifts])
   useEffect(() => { try { localStorage.setItem(K.mkt, JSON.stringify(mktOpen)) } catch {} }, [mktOpen])
   useEffect(() => { try { localStorage.setItem(K.streaks, JSON.stringify(streaks)) } catch {} }, [streaks])
   useEffect(() => { try { localStorage.setItem(K.log, JSON.stringify(logEntries)) } catch {} }, [logEntries])
@@ -751,7 +754,7 @@ export default function CommandCenter() {
      localStorage stays the offline cache; the server copy survives
      domain changes, re-installs, and new devices. Last write wins. */
   const snapshot = () => ({
-    soberStart, focus, focusDate, todos, horizon, reasons, streaks, logEntries, eyes,
+    soberStart, focus, focusDate, todos, horizon, reasons, streaks, logEntries, eyes, lifts,
   })
   const snapshotRef = useRef(snapshot)
   snapshotRef.current = snapshot
@@ -786,6 +789,7 @@ export default function CommandCenter() {
         setStreaks(merged.streaks)
         setLogEntries(merged.logEntries)
         setEyes(merged.eyes)
+        setLifts(merged.lifts)
 
         if (JSON.stringify(merged) !== JSON.stringify(remote)) {
           const updatedAt = Date.now()
@@ -827,7 +831,7 @@ export default function CommandCenter() {
       }
     }, 1500)
     return () => clearTimeout(pushTimer.current)
-  }, [soberStart, focus, todos, horizon, reasons, streaks, logEntries, eyes]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [soberStart, focus, todos, horizon, reasons, streaks, logEntries, eyes, lifts]) // eslint-disable-line react-hooks/exhaustive-deps
 
   /* emergency flush — a tap made in the last 1.5 s must not be stranded
      when iOS freezes the page. keepalive lets the request outlive it. */
@@ -1231,6 +1235,11 @@ export default function CommandCenter() {
     }
   }, [vitals, streaks, todayISO]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  /* next A-session bench weight per the program rules — the LIFT
+     command keeps this current; the morning routine mirrors it into
+     the calendar events */
+  const nextBench = useMemo(() => computeNextBench(lifts), [lifts])
+
   /* ---------- iris log — private eye-flare journal ----------
      Lives behind a quiet footer eye; the data renders only while the
      overlay is open. Marks + cause notes sync per-day (mergeEyes). */
@@ -1374,6 +1383,18 @@ export default function CommandCenter() {
       case 'why':
         if (!arg) return '? WHY <a reason>'
         setReasons((r) => [...r, arg]); return '✓ REASON ADDED'
+      case 'lift': {
+        /* LIFT <bench wt> <reps e.g. 5,5,5> [RDL <wt>] */
+        const m = arg.match(/^([\d.]+)\s+([\d,\/ ]+?)(?:\s+rdl\s+([\d.]+))?$/i)
+        if (!m) return '? LIFT <WT> <REPS 5,5,5> [RDL <WT>]'
+        const w = parseFloat(m[1])
+        const reps = m[2].split(/[,\/ ]+/).filter(Boolean).map(Number)
+        const entry = { w, reps, rdl: m[3] ? parseFloat(m[3]) : null, mt: Date.now() }
+        setLifts((l) => ({ ...l, [todayISO]: entry }))
+        if (!onDates('lift').has(todayISO)) toggleMark('lift', todayISO)
+        const next = computeNextBench({ ...lifts, [todayISO]: entry })
+        return `✓ LIFT ${w} LOGGED · NEXT A: BENCH ${next}`
+      }
       case 'habit':
         if (!arg) return '? HABIT <name>'
         setStreaks((s) => ({ ...s, habits: [...s.habits, { id: `h${Date.now()}`, name: arg.toUpperCase(), mt: Date.now() }] }))
@@ -1388,7 +1409,7 @@ export default function CommandCenter() {
       case 'book':
         setMktOpen((v) => !v); return '✓ BOOK TOGGLED'
       case 'help':
-        return 'FOCUS · TODO · GOAL · LOG · DID · WHY · HABIT · BOOK'
+        return 'FOCUS · TODO · GOAL · LOG · DID · LIFT 145 5,5,5 · WHY · HABIT · BOOK'
       default:
         return '? UNKNOWN — TRY HELP'
     }
@@ -2041,6 +2062,7 @@ export default function CommandCenter() {
                         <div className="vs-stats">
                           {heatCal.lastJudged && <>LAST WK <b className={heatCal.lastJudged.good ? 'lg-e' : 'lg-miss'}>{heatCal.lastJudged.good ? 'GOOD' : 'MISSED'}</b> · </>}
                           GOOD WKS <b>{heatCal.goodWks}/{heatCal.judgedWks}</b> · STREAK <b className={heatCal.streak > 0 ? 'vs-streak on' : ''}>{heatCal.streak}W</b>
+                          {nextBench != null && <> · NEXT A <b className="lg-lift">{nextBench}</b></>}
                         </div>
                       </div>
                   </div>

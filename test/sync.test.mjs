@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { mergeEyes, mergeState, mergeStreaks, mergeTodos, normStreaks, sweepDoneTodos } from '../src/lib/sync.js'
+import { computeNextBench, mergeEyes, mergeLifts, mergeState, mergeStreaks, mergeTodos, normStreaks, sweepDoneTodos } from '../src/lib/sync.js'
 
 const NOW = 1785000000000
 const T0 = NOW - 86400000 // "yesterday"
@@ -152,4 +152,31 @@ test('mergeEyes tolerates garbage and normalizes entries', () => {
 test('mergeState carries eyes', () => {
   const m = mergeState({ eyes: { '2026-07-20': { v: 1, note: 'sun', mt: 5 } } }, {}, true, NOW)
   assert.equal(m.eyes['2026-07-20'].note, 'sun')
+})
+
+test('computeNextBench follows the program rules', () => {
+  assert.equal(computeNextBench({}), null)
+  // clean 3x5 -> +2.5
+  assert.equal(computeNextBench({ '2026-07-27': { w: 135, reps: [5, 5, 5], mt: 1 } }), 137.5)
+  // one miss -> repeat the same weight
+  assert.equal(computeNextBench({
+    '2026-07-27': { w: 135, reps: [5, 5, 5], mt: 1 },
+    '2026-07-30': { w: 137.5, reps: [5, 5, 4], mt: 2 },
+  }), 137.5)
+  // two misses at the same weight -> drop 10%, rounded to 2.5
+  assert.equal(computeNextBench({
+    '2026-07-30': { w: 160, reps: [5, 4, 3], mt: 1 },
+    '2026-08-03': { w: 160, reps: [5, 5, 4], mt: 2 },
+  }), 145)
+  // extra back-off sets beyond 3 do not spoil a clean session
+  assert.equal(computeNextBench({ '2026-07-27': { w: 150, reps: [5, 5, 5, 3], mt: 1 } }), 152.5)
+})
+
+test('mergeLifts per-day LWW and garbage tolerance', () => {
+  const m = mergeLifts(
+    { '2026-07-27': { w: 135, reps: [5, 5, 5], mt: 100 } },
+    { '2026-07-27': { w: 135, reps: [5, 5, 4], mt: 200 }, '2026-07-28': { w: 0.5 } }
+  )
+  assert.deepEqual(m['2026-07-27'].reps, [5, 5, 4])
+  assert.deepEqual(mergeLifts('nope', null), {})
 })

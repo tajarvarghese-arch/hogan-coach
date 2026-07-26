@@ -148,6 +148,47 @@ export function mergeEyes(remote, local) {
   return out
 }
 
+/* Lift sessions: iso date -> { w: bench lbs, reps: [..], rdl, mt }.
+   Per-day LWW, same shape as the eye journal. */
+export function normLifts(v) {
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return {}
+  const out = {}
+  for (const [iso, e] of Object.entries(v)) {
+    if (!e || typeof e !== 'object' || typeof e.w !== 'number') continue
+    out[iso] = {
+      w: e.w,
+      reps: Array.isArray(e.reps) ? e.reps.map(Number).filter(Number.isFinite) : [],
+      rdl: typeof e.rdl === 'number' ? e.rdl : null,
+      mt: typeof e.mt === 'number' ? e.mt : 0,
+    }
+  }
+  return out
+}
+export function mergeLifts(remote, local) {
+  const out = normLifts(remote)
+  for (const [iso, e] of Object.entries(normLifts(local))) {
+    const o = out[iso]
+    if (!o || (e.mt || 0) >= (o.mt || 0)) out[iso] = e
+  }
+  return out
+}
+
+/* Program rule for the next A-session bench weight:
+   clean 3x5 -> +2.5 · miss -> repeat the weight once ·
+   miss twice at the same weight -> drop 10%, rounded to 2.5 */
+export function computeNextBench(lifts) {
+  const entries = Object.entries(normLifts(lifts))
+    .filter(([, e]) => typeof e.w === 'number')
+    .sort((a, b) => a[0].localeCompare(b[0]))
+  if (!entries.length) return null
+  const clean = (e) => e.reps.length >= 3 && e.reps.slice(0, 3).every((r) => r >= 5)
+  const last = entries[entries.length - 1][1]
+  if (clean(last)) return Math.round((last.w + 2.5) * 2) / 2
+  const prevSameW = entries.slice(0, -1).reverse().find(([, e]) => e.w === last.w)
+  if (prevSameW && !clean(prevSameW[1])) return Math.round((last.w * 0.9) / 2.5) * 2.5
+  return last.w
+}
+
 /* Merge two full state blobs. Collections merge item-wise (safe in any
    order); scalars (focus, soberStart) go to whichever blob is newer. */
 export function mergeState(remote = {}, local = {}, remoteNewer = false, now = Date.now()) {
@@ -163,6 +204,7 @@ export function mergeState(remote = {}, local = {}, remoteNewer = false, now = D
     reasons: mergeReasons(remote.reasons, local.reasons),
     logEntries: mergeLogs(remote.logEntries, local.logEntries),
     eyes: mergeEyes(remote.eyes, local.eyes),
+    lifts: mergeLifts(remote.lifts, local.lifts),
   }
 }
 
