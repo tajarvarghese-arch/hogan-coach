@@ -1642,3 +1642,32 @@ table.book tr.subtotal td:first-child {
 @media (prefers-reduced-motion: reduce) {
   .vs-boxes.l i.lit, .vs-boxes.l i.next { animation: none; }
 }
+
+/* ---------- LIFT BAR — the next session's prescription ----------
+   lives at the top of vitals; tap = command line pre-filled to log */
+.lift-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  text-align: left;
+  background: #0d0c0a;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-left: 2px solid #7c66ff;
+  font: inherit;
+  color: var(--text);
+  padding: 8px 12px 9px;
+  cursor: pointer;
+}
+.lift-bar u {
+  text-decoration: none;
+  color: #7c66ff;
+  font-size: 9px;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+.lift-bar b { font-size: 13px; font-weight: 700; letter-spacing: 0.5px; }
+.lift-bar span { color: var(--dim); font-size: 10px; letter-spacing: 0.4px; white-space: normal; }
+.lift-bar:hover b { color: #a89aff; }
+.term.night .lift-bar u { color: #6552d8; }

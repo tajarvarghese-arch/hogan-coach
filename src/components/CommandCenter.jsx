@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { computeNextBench, mergeState, normTodos, normHorizon, normStreaks, normEyes, normLifts, sweepDoneTodos } from '../lib/sync'
+import { nextLiftSession } from '../lib/program'
 import { marketState } from '../lib/market'
 import { layoutTreemap } from '../lib/treemap'
 import '../styles/command-center.css'
@@ -1240,6 +1241,13 @@ export default function CommandCenter() {
      the calendar events */
   const nextBench = useMemo(() => computeNextBench(lifts), [lifts])
 
+  /* the lift menu: what the program prescribes next, shown before the
+     session so there is nothing to remember at the bench */
+  const liftMenu = useMemo(() => {
+    const doneToday = !!lifts[todayISO] || onDates('lift').has(todayISO)
+    return { session: nextLiftSession(now, lifts, doneToday), doneToday }
+  }, [lifts, streaks, todayISO]) // eslint-disable-line react-hooks/exhaustive-deps
+
   /* ---------- iris log — private eye-flare journal ----------
      Lives behind a quiet footer eye; the data renders only while the
      overlay is open. Marks + cause notes sync per-day (mergeEyes). */
@@ -1970,6 +1978,15 @@ export default function CommandCenter() {
                 <span className="chev"> &nbsp;{vitalsOpen ? '▲ HIDE' : '▼ CHARTS'}</span>
               </span>
             </div>
+            {liftMenu.session && (
+              <button className="lift-bar"
+                title="Tap to log — LIFT <weight> <reps>"
+                onClick={() => { setCmdOpen(true); setCmdDraft('LIFT ') }}>
+                <u>{liftMenu.doneToday ? '✓ LIFTED · NEXT' : 'NEXT LIFT'} · {liftMenu.session.when}</u>
+                <b>{liftMenu.session.headline}</b>
+                <span>{liftMenu.session.detail}</span>
+              </button>
+            )}
             {vitalsOpen && (!heatCal || heatCal.logged === 0 ? (
               <div className="agenda-empty">Awaiting health data — history appears after your first sync.</div>
             ) : (
