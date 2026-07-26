@@ -1957,7 +1957,6 @@ export default function CommandCenter() {
                       <u>10K <b className="lg-s">◯</b> · 30M <b className="lg-e">●</b> · LIFT <b className="lg-lift">•</b> · 12W</u>
                     </div>
                     <div className="heatcal">
-                      <div className="crt-cell hc-grid">
                       <div className="dowrail" aria-hidden="true">
                         {DOW.map((d, i) => <u key={i}>{d}</u>)}
                       </div>
@@ -1992,12 +1991,10 @@ export default function CommandCenter() {
                           ))}
                         </div>
                       </div>
-                      </div>
-                      {/* week scorecard — the week you can still win, as lit
-                          instrument keys: filled = landed, breathing = the
-                          next one to earn */}
-                      <div className="crt-cell vit-side">
-                        <u className="vs-head">THIS WK · OPEN</u>
+                    </div>
+                    {/* week scorecard — a band under the calendar: the week
+                        you can still win as lit keys, verdicts to the right */}
+                    <div className="vit-band">
                         <div className="vs-meter">
                           <u>10K DAYS</u>
                           <div className="vs-boxes s" role="img" aria-label={`${cur.sDays} of ${STEP_WK} step days`}>
@@ -2021,12 +2018,10 @@ export default function CommandCenter() {
                           </div>
                         </div>
                         <div className="vs-stats">
-                          {heatCal.lastJudged && <>LAST WK <b className={heatCal.lastJudged.good ? 'lg-e' : 'lg-miss'}>{heatCal.lastJudged.good ? 'GOOD' : 'MISSED'}</b><br /></>}
-                          GOOD WKS <b>{heatCal.goodWks}/{heatCal.judgedWks}</b><br />
-                          STREAK <b className={heatCal.streak > 0 ? 'vs-streak on' : ''}>{heatCal.streak}W</b>
+                          {heatCal.lastJudged && <>LAST WK <b className={heatCal.lastJudged.good ? 'lg-e' : 'lg-miss'}>{heatCal.lastJudged.good ? 'GOOD' : 'MISSED'}</b> · </>}
+                          GOOD WKS <b>{heatCal.goodWks}/{heatCal.judgedWks}</b> · STREAK <b className={heatCal.streak > 0 ? 'vs-streak on' : ''}>{heatCal.streak}W</b>
                         </div>
                       </div>
-                    </div>
                   </div>
                 )
               })()

@@ -1163,8 +1163,8 @@ table.book tr.subtotal td:first-child {
 .heatcal { display: flex; gap: 8px; }
 .heatcal .dowrail {
   display: grid;
-  grid-template-rows: repeat(7, 1fr);
-  gap: 2px;
+  grid-template-rows: repeat(7, 26px);
+  gap: 3px;
 }
 .heatcal .dowrail u {
   text-decoration: none;
@@ -1176,9 +1176,9 @@ table.book tr.subtotal td:first-child {
 .heatcal .cells {
   display: grid;
   grid-auto-flow: column;
-  grid-template-rows: repeat(7, 1fr);
+  grid-template-rows: repeat(7, 26px);
   grid-auto-columns: 1fr;
-  gap: 2px;
+  gap: 3px;
   flex: 1;
   width: 100%;
 }
@@ -1283,7 +1283,7 @@ table.book tr.subtotal td:first-child {
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: 1fr;
-  gap: 2px;
+  gap: 3px;
   width: 100%;
 }
 .wkrail b {
@@ -1309,18 +1309,17 @@ table.book tr.subtotal td:first-child {
    lit instrument keys: bevel gives them physical depth, landed days
    pop in with a cascade, the next key to earn breathes, the streak
    glows. All motion honors reduced-motion; night watch dims it. */
-/* symmetric halves: the calendar and the scorecard sit as twin cells
-   with matched padding; the phosphor lives in the markers themselves */
-.heatcal { gap: 10px; }
-.crt-cell { position: relative; padding: 9px; }
-.crt-cell.hc-grid { display: flex; gap: 7px; flex: 1.4 1 0; min-width: 0; }
-.vit-side {
-  flex: 1 1 0;
-  min-width: 0;
+/* full-width calendar: the dials get the whole panel; the scorecard
+   lives in a band beneath */
+.heatcal { gap: 7px; padding: 4px 2px 0; }
+.vit-band {
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px 20px;
+  padding: 10px 2px 2px;
+  margin-top: 8px;
+  border-top: 1px solid var(--line);
 }
 .vs-head { text-decoration: none; font-size: 9px; letter-spacing: 1px; color: var(--dim); }
 .vs-meter u { display: block; text-decoration: none; font-size: 9px; letter-spacing: 1px; color: var(--dim); margin-bottom: 3px; }
@@ -1385,7 +1384,7 @@ table.book tr.subtotal td:first-child {
    workout core, so both metrics live at the same spot in every cell
    and a streak reads as an unbroken run of lit rings */
 .heatcal .cells i.has .ring {
-  height: 94%;
+  height: 25px;
   aspect-ratio: 1;
   border-radius: 50%;
   border: 2px solid rgba(255, 255, 255, 0.07);
@@ -1403,7 +1402,7 @@ table.book tr.subtotal td:first-child {
 .heatcal .cells i.has .ring.mid { border-color: rgba(255, 171, 0, 0.32); }
 .heatcal .cells i.has .ring.low { border-color: rgba(255, 255, 255, 0.09); }
 .heatcal .cells i.has .core {
-  width: 84%;
+  width: 76%;
   aspect-ratio: 1;
   border-radius: 50%;
 }
@@ -1416,16 +1415,16 @@ table.book tr.subtotal td:first-child {
 /* lifting session — the red pin at the dial's very center */
 .heatcal .cells i.has .core { display: flex; align-items: center; justify-content: center; }
 .heatcal .cells i.has .pin {
-  width: 62%;
+  width: 50%;
   aspect-ratio: 1;
   border-radius: 50%;
-  /* neon blue in a dark moat — the near-black ring keeps the pin from
-     ever touching the green core, so the blue pops instead of blending */
+  /* neon blue in a wide dark well: with a pin present the core reads
+     as a green annulus around darkness — blue only ever borders black */
   background: #00d8ff;
   box-shadow:
-    0 0 0 1.5px rgba(5, 4, 3, 0.92),
-    0 0 5px rgba(0, 216, 255, 0.95),
-    0 0 10px rgba(0, 216, 255, 0.5);
+    0 0 0 2.5px rgba(5, 4, 3, 0.95),
+    0 0 6px rgba(0, 216, 255, 0.95),
+    0 0 12px rgba(0, 216, 255, 0.5);
 }
 .lg-lift { color: #00d8ff; font-weight: 700; text-shadow: 0 0 6px rgba(0, 216, 255, 0.5); }
 .term.night .heatcal .cells i.has .pin { box-shadow: 0 0 0 1.5px rgba(5, 4, 3, 0.92); background: #35a8c8; }
