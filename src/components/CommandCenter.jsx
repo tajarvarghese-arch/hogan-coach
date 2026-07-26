@@ -1943,7 +1943,7 @@ export default function CommandCenter() {
                     STEPS <b>{v.steps != null ? v.steps.toLocaleString() : '—'}</b>
                     {' · EX '}<b>{v.exercise != null ? `${v.exercise}M` : '—'}</b>
                     {yda ? ' · YDA' : ''}
-                    {heatCal ? <> · WK <b>{heatCal.cur.sDays}/{STEP_WK}</b>·<b>{heatCal.cur.eDays}/{EX_WK}</b>{heatCal.cur.liftApplies ? <>·<b>{heatCal.cur.lDays}/{LIFT_WK}</b></> : null}</> : null}
+                    {heatCal ? <> · WK <b>{heatCal.cur.sDays}/{STEP_WK}</b>·<b>{heatCal.cur.eDays}/{EX_WK}</b>·<b>{heatCal.cur.lDays}/{LIFT_WK}</b></> : null}
                   </>)
                 })()}
                 <span className="chev"> &nbsp;{vitalsOpen ? '▲ HIDE' : '▼ CHARTS'}</span>
@@ -2027,19 +2027,17 @@ export default function CommandCenter() {
                             <b className="lg-e">{cur.eDays}/{EX_WK}</b>
                           </div>
                         </div>
-                        {cur.liftApplies && (
-                          <div className="vs-meter">
-                            <u>LIFTS</u>
-                            <div className="vs-boxes l" role="img" aria-label={`${cur.lDays} of ${LIFT_WK} lift sessions`}>
-                              {Array.from({ length: LIFT_WK }, (_, i) => (
-                                <i key={i}
-                                  className={i < cur.lDays ? 'lit' : i === cur.lDays ? 'next' : ''}
-                                  style={i < cur.lDays ? { animationDelay: `${i * 90}ms` } : undefined} />
-                              ))}
-                              <b className="lg-lift">{cur.lDays}/{LIFT_WK}</b>
-                            </div>
+                        <div className="vs-meter">
+                          <u>LIFTS</u>
+                          <div className="vs-boxes l" role="img" aria-label={`${cur.lDays} of ${LIFT_WK} lift sessions`}>
+                            {Array.from({ length: LIFT_WK }, (_, i) => (
+                              <i key={i}
+                                className={i < cur.lDays ? 'lit' : i === cur.lDays ? 'next' : ''}
+                                style={i < cur.lDays ? { animationDelay: `${i * 90}ms` } : undefined} />
+                            ))}
+                            <b className="lg-lift">{cur.lDays}/{LIFT_WK}</b>
                           </div>
-                        )}
+                        </div>
                         <div className="vs-stats">
                           {heatCal.lastJudged && <>LAST WK <b className={heatCal.lastJudged.good ? 'lg-e' : 'lg-miss'}>{heatCal.lastJudged.good ? 'GOOD' : 'MISSED'}</b> · </>}
                           GOOD WKS <b>{heatCal.goodWks}/{heatCal.judgedWks}</b> · STREAK <b className={heatCal.streak > 0 ? 'vs-streak on' : ''}>{heatCal.streak}W</b>
