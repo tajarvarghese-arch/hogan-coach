@@ -1403,7 +1403,7 @@ table.book tr.subtotal td:first-child {
 .heatcal .cells i.has .ring.mid { border-color: rgba(255, 171, 0, 0.32); }
 .heatcal .cells i.has .ring.low { border-color: rgba(255, 255, 255, 0.09); }
 .heatcal .cells i.has .core {
-  width: 60%;
+  width: 84%;
   aspect-ratio: 1;
   border-radius: 50%;
 }
@@ -1419,13 +1419,12 @@ table.book tr.subtotal td:first-child {
   width: 58%;
   aspect-ratio: 1;
   border-radius: 50%;
-  /* white-hot: the hottest element on a phosphor tube is white — reads
-     over a lit green core and a dark one alike, and keeps red for losses */
-  background: #fff;
-  box-shadow: 0 0 4px rgba(255, 255, 255, 0.95), 0 0 9px rgba(255, 255, 255, 0.45);
+  /* neon blue — electric against amber ring and green core alike */
+  background: #00d8ff;
+  box-shadow: 0 0 4px rgba(0, 216, 255, 0.95), 0 0 9px rgba(0, 216, 255, 0.5);
 }
-.lg-lift { color: #fff; font-weight: 700; text-shadow: 0 0 6px rgba(255, 255, 255, 0.5); }
-.term.night .heatcal .cells i.has .pin { box-shadow: none; background: var(--text); }
+.lg-lift { color: #00d8ff; font-weight: 700; text-shadow: 0 0 6px rgba(0, 216, 255, 0.5); }
+.term.night .heatcal .cells i.has .pin { box-shadow: none; background: #35a8c8; }
 .term.night .lg-lift { text-shadow: none; }
 .heatcal .cells i.has:nth-child(3n) { opacity: 0.98; }
 .heatcal .cells i.has:nth-child(5n + 1) { opacity: 0.85; }
