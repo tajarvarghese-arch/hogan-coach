@@ -1385,7 +1385,7 @@ table.book tr.subtotal td:first-child {
    workout core, so both metrics live at the same spot in every cell
    and a streak reads as an unbroken run of lit rings */
 .heatcal .cells i.has .ring {
-  height: 82%;
+  height: 94%;
   aspect-ratio: 1;
   border-radius: 50%;
   border: 2px solid rgba(255, 255, 255, 0.07);
@@ -1403,7 +1403,7 @@ table.book tr.subtotal td:first-child {
 .heatcal .cells i.has .ring.mid { border-color: rgba(255, 171, 0, 0.32); }
 .heatcal .cells i.has .ring.low { border-color: rgba(255, 255, 255, 0.09); }
 .heatcal .cells i.has .core {
-  width: 48%;
+  width: 60%;
   aspect-ratio: 1;
   border-radius: 50%;
 }
@@ -1416,14 +1416,17 @@ table.book tr.subtotal td:first-child {
 /* lifting session — the red pin at the dial's very center */
 .heatcal .cells i.has .core { display: flex; align-items: center; justify-content: center; }
 .heatcal .cells i.has .pin {
-  width: 42%;
+  width: 58%;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: var(--down);
-  box-shadow: 0 0 3px rgba(255, 69, 58, 0.9), 0 0 6px rgba(255, 69, 58, 0.4);
+  /* white-hot: the hottest element on a phosphor tube is white — reads
+     over a lit green core and a dark one alike, and keeps red for losses */
+  background: #fff;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.95), 0 0 9px rgba(255, 255, 255, 0.45);
 }
-.lg-lift { color: var(--down); font-weight: 700; }
-.term.night .heatcal .cells i.has .pin { box-shadow: none; }
+.lg-lift { color: #fff; font-weight: 700; text-shadow: 0 0 6px rgba(255, 255, 255, 0.5); }
+.term.night .heatcal .cells i.has .pin { box-shadow: none; background: var(--text); }
+.term.night .lg-lift { text-shadow: none; }
 .heatcal .cells i.has:nth-child(3n) { opacity: 0.98; }
 .heatcal .cells i.has:nth-child(5n + 1) { opacity: 0.85; }
 .heatcal .cells i.has:nth-child(7n + 3) { opacity: 0.92; }
