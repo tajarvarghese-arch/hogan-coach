@@ -369,6 +369,7 @@ const seedStreaks = {
     { id: 'golf', name: 'GOLF/TENNIS' },
     { id: 'move', name: 'WORKOUT' },
     { id: 'meeting', name: 'MEETING' },
+    { id: 'lift', name: 'LIFT' },
   ],
   marks: {},
 }
@@ -1177,6 +1178,7 @@ export default function CommandCenter() {
      week is GOOD when both weekly targets land */
   const heatCal = useMemo(() => {
     if (!vitals) return null
+    const liftSet = new Set(Object.keys(streaks.marks.lift || {}).filter((d) => streaks.marks.lift[d]?.on))
     const dayMs = 86400000
     const mid = todayMid(now).getTime()
     const dow = (new Date(mid).getDay() + 6) % 7 // Monday = 0
@@ -1191,7 +1193,7 @@ export default function CommandCenter() {
         const v = future ? undefined : vitals[iso]
         const steps = typeof v?.steps === 'number' ? v.steps : null
         const ex = typeof v?.exercise === 'number' ? v.exercise : null
-        col.push({ iso, steps, ex, future, today: iso === todayISO })
+        col.push({ iso, steps, ex, future, today: iso === todayISO, lift: liftSet.has(iso) })
       }
       weeks.push(col)
     }
@@ -1217,7 +1219,7 @@ export default function CommandCenter() {
       lastJudged: weekMeta.length > 1 && weekMeta[weekMeta.length - 2].logged ? weekMeta[weekMeta.length - 2] : null,
       logged: Object.keys(vitals).length,
     }
-  }, [vitals, todayISO]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [vitals, streaks, todayISO]) // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ---------- iris log — private eye-flare journal ----------
      Lives behind a quiet footer eye; the data renders only while the
@@ -1947,12 +1949,12 @@ export default function CommandCenter() {
                 const pipTier = (v, goal) =>
                   v == null ? '' : v >= goal ? 'hit' : v >= goal / 2 ? 'mid' : 'low'
                 const cellTitle = (c) =>
-                  `${fmtDateW(c.iso)} · ${c.steps != null ? c.steps.toLocaleString() : '—'} steps · ${c.ex != null ? c.ex : '—'} min`
+                  `${fmtDateW(c.iso)} · ${c.steps != null ? c.steps.toLocaleString() : '—'} steps · ${c.ex != null ? c.ex : '—'} min${c.lift ? ' · LIFTED' : ''}`
                 const cur = heatCal.cur
                 return (
                   <div className="chart-block">
                     <div className="chart-label">
-                      <u>10K STEPS <b className="lg-s">◯</b> · 30 MIN <b className="lg-e">●</b> · 12W</u>
+                      <u>10K <b className="lg-s">◯</b> · 30M <b className="lg-e">●</b> · LIFT <b className="lg-lift">•</b> · 12W</u>
                     </div>
                     <div className="heatcal">
                       <div className="crt-cell hc-grid">
@@ -1970,7 +1972,9 @@ export default function CommandCenter() {
                                   title={cellTitle(c)}>
                                   {has && (
                                     <b className={`ring ${pipTier(c.steps, STEP_GOAL)}`}>
-                                      <em className={`core ${pipTier(c.ex, EX_GOAL)}`} />
+                                      <em className={`core ${pipTier(c.ex, EX_GOAL)}`}>
+                                        {c.lift && <s className="pin" />}
+                                      </em>
                                     </b>
                                   )}
                                 </i>
