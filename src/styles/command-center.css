@@ -1416,15 +1416,19 @@ table.book tr.subtotal td:first-child {
 /* lifting session — the red pin at the dial's very center */
 .heatcal .cells i.has .core { display: flex; align-items: center; justify-content: center; }
 .heatcal .cells i.has .pin {
-  width: 58%;
+  width: 62%;
   aspect-ratio: 1;
   border-radius: 50%;
-  /* neon blue — electric against amber ring and green core alike */
+  /* neon blue in a dark moat — the near-black ring keeps the pin from
+     ever touching the green core, so the blue pops instead of blending */
   background: #00d8ff;
-  box-shadow: 0 0 4px rgba(0, 216, 255, 0.95), 0 0 9px rgba(0, 216, 255, 0.5);
+  box-shadow:
+    0 0 0 1.5px rgba(5, 4, 3, 0.92),
+    0 0 5px rgba(0, 216, 255, 0.95),
+    0 0 10px rgba(0, 216, 255, 0.5);
 }
 .lg-lift { color: #00d8ff; font-weight: 700; text-shadow: 0 0 6px rgba(0, 216, 255, 0.5); }
-.term.night .heatcal .cells i.has .pin { box-shadow: none; background: #35a8c8; }
+.term.night .heatcal .cells i.has .pin { box-shadow: 0 0 0 1.5px rgba(5, 4, 3, 0.92); background: #35a8c8; }
 .term.night .lg-lift { text-shadow: none; }
 .heatcal .cells i.has:nth-child(3n) { opacity: 0.98; }
 .heatcal .cells i.has:nth-child(5n + 1) { opacity: 0.85; }
