@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { mergeState, normTodos, normHorizon, normStreaks, sweepDoneTodos } from '../lib/sync'
+import { mergeState, normTodos, normHorizon, normStreaks, normEyes, sweepDoneTodos } from '../lib/sync'
 import { marketState } from '../lib/market'
 import { layoutTreemap } from '../lib/treemap'
 import '../styles/command-center.css'
@@ -42,6 +42,7 @@ const K = {
   todos: 'tajar-today-todos',
   horizon: 'tajar-horizon',
   reasons: 'tajar-reasons',
+  eyes: 'tajar-eyes',
   mkt: 'tajar-markets-open',
   streaks: 'tajar-streaks',
   log: 'tajar-captains-log',
@@ -547,6 +548,7 @@ export default function CommandCenter() {
   const [horizon, setHorizon] = useState(() => normHorizon(load(K.horizon, seedHorizon)))
   const [hzDraft, setHzDraft] = useState('')
   const [reasons, setReasons] = useState(() => load(K.reasons, seedReasons))
+  const [eyes, setEyes] = useState(() => normEyes(load(K.eyes, {})))
   const [reasonDraft, setReasonDraft] = useState('')
   const [wx, setWx] = useState(null)
   const [tides, setTides] = useState([])
@@ -718,6 +720,7 @@ export default function CommandCenter() {
   useEffect(() => { try { localStorage.setItem(K.todos, JSON.stringify(todos)) } catch {} }, [todos])
   useEffect(() => { try { localStorage.setItem(K.horizon, JSON.stringify(horizon)) } catch {} }, [horizon])
   useEffect(() => { try { localStorage.setItem(K.reasons, JSON.stringify(reasons)) } catch {} }, [reasons])
+  useEffect(() => { try { localStorage.setItem(K.eyes, JSON.stringify(eyes)) } catch {} }, [eyes])
   useEffect(() => { try { localStorage.setItem(K.mkt, JSON.stringify(mktOpen)) } catch {} }, [mktOpen])
   useEffect(() => { try { localStorage.setItem(K.streaks, JSON.stringify(streaks)) } catch {} }, [streaks])
   useEffect(() => { try { localStorage.setItem(K.log, JSON.stringify(logEntries)) } catch {} }, [logEntries])
@@ -742,7 +745,7 @@ export default function CommandCenter() {
      localStorage stays the offline cache; the server copy survives
      domain changes, re-installs, and new devices. Last write wins. */
   const snapshot = () => ({
-    soberStart, focus, focusDate, todos, horizon, reasons, streaks, logEntries,
+    soberStart, focus, focusDate, todos, horizon, reasons, streaks, logEntries, eyes,
   })
   const snapshotRef = useRef(snapshot)
   snapshotRef.current = snapshot
@@ -776,6 +779,7 @@ export default function CommandCenter() {
         setReasons(merged.reasons)
         setStreaks(merged.streaks)
         setLogEntries(merged.logEntries)
+        setEyes(merged.eyes)
 
         if (JSON.stringify(merged) !== JSON.stringify(remote)) {
           const updatedAt = Date.now()
@@ -817,7 +821,7 @@ export default function CommandCenter() {
       }
     }, 1500)
     return () => clearTimeout(pushTimer.current)
-  }, [soberStart, focus, todos, horizon, reasons, streaks, logEntries]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [soberStart, focus, todos, horizon, reasons, streaks, logEntries, eyes]) // eslint-disable-line react-hooks/exhaustive-deps
 
   /* emergency flush — a tap made in the last 1.5 s must not be stranded
      when iOS freezes the page. keepalive lets the request outlive it. */
@@ -1214,6 +1218,57 @@ export default function CommandCenter() {
       logged: Object.keys(vitals).length,
     }
   }, [vitals, todayISO]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* ---------- iris log — private eye-flare journal ----------
+     Lives behind a quiet footer eye; the data renders only while the
+     overlay is open. Marks + cause notes sync per-day (mergeEyes). */
+  const [eyeOpen, setEyeOpen] = useState(false)
+  const [eyeSel, setEyeSel] = useState(todayISO)
+  const [eyeNoteDraft, setEyeNoteDraft] = useState('')
+  const openEyeLog = () => { setEyeSel(todayISO); setEyeNoteDraft(eyes[todayISO]?.note || ''); setEyeOpen(true) }
+  const selectEyeDay = (iso) => { setEyeSel(iso); setEyeNoteDraft(eyes[iso]?.note || '') }
+  const toggleEyeDay = (iso) =>
+    setEyes((e) => ({ ...e, [iso]: { v: e[iso]?.v ? 0 : 1, note: e[iso]?.note || '', mt: Date.now() } }))
+  const saveEyeNote = () =>
+    setEyes((e) => {
+      const cur = e[eyeSel] || { v: 0, note: '' }
+      if ((cur.note || '') === eyeNoteDraft.trim()) return e
+      return { ...e, [eyeSel]: { v: cur.v || 0, note: eyeNoteDraft.trim(), mt: Date.now() } }
+    })
+  const eyeCal = useMemo(() => {
+    const dayMs = 86400000
+    const mid = todayMid(now).getTime()
+    const dow = (new Date(mid).getDay() + 6) % 7
+    const thisMonday = mid - dow * dayMs
+    const weeks = []
+    for (let w = 11; w >= 0; w--) {
+      const col = []
+      for (let d = 0; d < 7; d++) {
+        const t = thisMonday - w * 7 * dayMs + d * dayMs
+        const iso = isoOf(new Date(t))
+        col.push({ iso, future: t > mid, today: iso === todayISO, on: !!eyes[iso]?.v, note: eyes[iso]?.note || '' })
+      }
+      weeks.push(col)
+    }
+    const marked = Object.entries(eyes).filter(([, e]) => e.v)
+    const last30 = marked.filter(([iso]) => {
+      const t = new Date(`${iso}T00:00`).getTime()
+      return t <= mid && mid - t <= 30 * dayMs
+    }).length
+    const wd = {}
+    for (const [iso] of marked) {
+      const k = new Date(`${iso}T00:00`).toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase()
+      wd[k] = (wd[k] || 0) + 1
+    }
+    const topDay = Object.entries(wd).sort((a, b) => b[1] - a[1])[0] || null
+    return {
+      weeks, last30,
+      total: marked.length,
+      lastIso: marked.map(([iso]) => iso).sort().pop() || null,
+      notes: marked.filter(([, e]) => e.note).sort((a, b) => b[0].localeCompare(a[0])).slice(0, 8),
+      topDay,
+    }
+  }, [eyes, todayISO]) // eslint-disable-line react-hooks/exhaustive-deps
 
   /* captain's log — one line per day; saving again overwrites today's line */
   const todayLog = logEntries.find((e) => e.d === todayISO)
@@ -1897,7 +1952,7 @@ export default function CommandCenter() {
                 return (
                   <div className="chart-block">
                     <div className="chart-label">
-                      <u>10K STEPS <b className="lg-s">▀</b> · 30 MIN <b className="lg-e">▄</b> · 12W</u>
+                      <u>10K STEPS <b className="lg-s">◯</b> · 30 MIN <b className="lg-e">●</b> · 12W</u>
                     </div>
                     <div className="heatcal">
                       <div className="crt-cell hc-grid">
@@ -1913,10 +1968,11 @@ export default function CommandCenter() {
                                 <i key={c.iso}
                                   className={`${c.today ? 'today' : ''} ${c.future ? 'future' : ''} ${has ? 'has' : ''}`}
                                   title={cellTitle(c)}>
-                                  {has && <>
-                                    <em className={`s ${pipTier(c.steps, STEP_GOAL)}`} />
-                                    <em className={`e ${pipTier(c.ex, EX_GOAL)}`} />
-                                  </>}
+                                  {has && (
+                                    <b className={`ring ${pipTier(c.steps, STEP_GOAL)}`}>
+                                      <em className={`core ${pipTier(c.ex, EX_GOAL)}`} />
+                                    </b>
+                                  )}
                                 </i>
                               )
                             })
@@ -2028,6 +2084,12 @@ export default function CommandCenter() {
           {syncStatus === 'ok' ? 'PRIVATE · SYNCED TO YOUR CLOUD STORE' : 'PRIVATE · STORED ON THIS DEVICE'}
           {' · QUOTES '}{live ? 'LIVE (YAHOO)' : 'SNAPSHOT'}
         </span>
+        <button className="eye-chip" aria-label="Private journal" onClick={openEyeLog}>
+          <svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z" fill="none" stroke="currentColor" strokeWidth="1.6" />
+            <circle cx="12" cy="12" r="2.7" fill="currentColor" />
+          </svg>
+        </button>
         {editSync ? (
           <span className="sync-edit">
             <input
@@ -2066,6 +2128,59 @@ export default function CommandCenter() {
           </button>
         ))}
       </nav>
+
+      {/* iris log overlay — the journal exists on screen only while open */}
+      {eyeOpen && (
+        <div className="eyelog" role="dialog" aria-label="Private eye journal">
+          <div className="eyelog-head">
+            <h2>◉ IRIS · FLARE LOG</h2>
+            <span className="eyelog-close" role="button" tabIndex={0}
+              onClick={() => { saveEyeNote(); setEyeOpen(false) }}
+              onKeyDown={keyActivate(() => { saveEyeNote(); setEyeOpen(false) })}>✕ CLOSE</span>
+          </div>
+          <p className="eyelog-sub">SWELL-UP DAYS · LAST 12 WEEKS · TAP A DAY, MARK IT, NOTE THE LIKELY CAUSE</p>
+          <div className="eyecal">
+            <div className="dowrail" aria-hidden="true">
+              {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => <u key={i}>{d}</u>)}
+            </div>
+            <div className="ecells">
+              {eyeCal.weeks.map((col) => col.map((c) => (
+                <i key={c.iso}
+                  className={`${c.on ? 'on' : ''} ${c.today ? 'today' : ''} ${c.future ? 'future' : ''} ${c.iso === eyeSel ? 'sel' : ''}`}
+                  role="button" tabIndex={c.future ? -1 : 0}
+                  title={`${fmtDateW(c.iso)}${c.note ? ' · ' + c.note : ''}`}
+                  onClick={() => !c.future && selectEyeDay(c.iso)}
+                  onKeyDown={keyActivate(() => !c.future && selectEyeDay(c.iso))} />
+              )))}
+            </div>
+          </div>
+          <div className="eyelog-day">
+            <b>{fmtDateW(eyeSel)}</b>
+            <button className={`eye-mark ${eyes[eyeSel]?.v ? 'on' : ''}`} onClick={() => toggleEyeDay(eyeSel)}>
+              {eyes[eyeSel]?.v ? '◉ FLARED — TAP TO CLEAR' : '○ MARK FLARE'}
+            </button>
+          </div>
+          <div className="eyelog-notefield">
+            <input value={eyeNoteDraft} aria-label="Likely cause"
+              onChange={(e) => setEyeNoteDraft(e.target.value)}
+              onBlur={saveEyeNote}
+              onKeyDown={(e) => e.key === 'Enter' && saveEyeNote()}
+              placeholder="LIKELY CAUSE — WINE, POLLEN, SHORT SLEEP…" />
+          </div>
+          <div className="eyelog-stats">
+            LAST 30D <b>{eyeCal.last30}</b> · ALL TIME <b>{eyeCal.total}</b>
+            {eyeCal.lastIso ? <> · LAST <b>{fmtDate(eyeCal.lastIso)}</b></> : null}
+            {eyeCal.topDay && eyeCal.topDay[1] > 1 ? <> · PATTERN <b>{eyeCal.topDay[0]} ×{eyeCal.topDay[1]}</b></> : null}
+          </div>
+          {eyeCal.notes.length > 0 && (
+            <div className="eyelog-list">
+              {eyeCal.notes.map(([iso, e]) => (
+                <p key={iso}><span>{fmtDate(iso)}</span>{e.note}</p>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* pull-to-relink indicator */}
       {pullState && (

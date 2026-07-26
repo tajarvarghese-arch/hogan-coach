@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { mergeState, mergeStreaks, mergeTodos, normStreaks, sweepDoneTodos } from '../src/lib/sync.js'
+import { mergeEyes, mergeState, mergeStreaks, mergeTodos, normStreaks, sweepDoneTodos } from '../src/lib/sync.js'
 
 const NOW = 1785000000000
 const T0 = NOW - 86400000 // "yesterday"
@@ -126,4 +126,30 @@ test('sweepDoneTodos returns the same reference when nothing qualifies', () => {
   const todos = [{ id: 1, text: 'open', done: false, mt: 1 }]
   assert.equal(sweepDoneTodos(todos, dayStart, dayStart), todos)
   assert.equal(sweepDoneTodos('garbage', dayStart, dayStart), 'garbage')
+})
+
+test('mergeEyes: newer touch of a day wins, others merge through', () => {
+  const remote = {
+    '2026-07-20': { v: 1, note: 'pollen', mt: 100 },
+    '2026-07-21': { v: 1, note: '', mt: 100 },
+  }
+  const local = {
+    '2026-07-21': { v: 0, note: '', mt: 200 },
+    '2026-07-22': { v: 1, note: 'wine', mt: 150 },
+  }
+  const m = mergeEyes(remote, local)
+  assert.equal(m['2026-07-20'].note, 'pollen')
+  assert.equal(m['2026-07-21'].v, 0)
+  assert.equal(m['2026-07-22'].note, 'wine')
+})
+
+test('mergeEyes tolerates garbage and normalizes entries', () => {
+  assert.deepEqual(mergeEyes('nope', null), {})
+  const m = mergeEyes({ '2026-07-20': { v: 2, note: 7, mt: 'x' } }, {})
+  assert.deepEqual(m['2026-07-20'], { v: 1, note: '', mt: 0 })
+})
+
+test('mergeState carries eyes', () => {
+  const m = mergeState({ eyes: { '2026-07-20': { v: 1, note: 'sun', mt: 5 } } }, {}, true, NOW)
+  assert.equal(m.eyes['2026-07-20'].note, 'sun')
 })

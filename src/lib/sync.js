@@ -123,6 +123,31 @@ export function mergeLogs(a = [], b = []) {
   return [...m.values()].sort((x, y) => y.d.localeCompare(x.d))
 }
 
+/* Eye-flare journal: a private map of iso date -> { v: 0|1, note, mt }.
+   Per-day last-write-wins — marking, clearing, and note edits all stamp
+   mt, so devices converge on the latest touch of each day. */
+export function normEyes(v) {
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return {}
+  const out = {}
+  for (const [iso, e] of Object.entries(v)) {
+    if (!e || typeof e !== 'object') continue
+    out[iso] = {
+      v: e.v ? 1 : 0,
+      note: typeof e.note === 'string' ? e.note : '',
+      mt: typeof e.mt === 'number' ? e.mt : 0,
+    }
+  }
+  return out
+}
+export function mergeEyes(remote, local) {
+  const out = normEyes(remote)
+  for (const [iso, e] of Object.entries(normEyes(local))) {
+    const o = out[iso]
+    if (!o || (e.mt || 0) >= (o.mt || 0)) out[iso] = e
+  }
+  return out
+}
+
 /* Merge two full state blobs. Collections merge item-wise (safe in any
    order); scalars (focus, soberStart) go to whichever blob is newer. */
 export function mergeState(remote = {}, local = {}, remoteNewer = false, now = Date.now()) {
@@ -137,6 +162,7 @@ export function mergeState(remote = {}, local = {}, remoteNewer = false, now = D
     streaks: mergeStreaks(remote.streaks, local.streaks, now),
     reasons: mergeReasons(remote.reasons, local.reasons),
     logEntries: mergeLogs(remote.logEntries, local.logEntries),
+    eyes: mergeEyes(remote.eyes, local.eyes),
   }
 }
 
