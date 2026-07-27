@@ -1969,9 +1969,8 @@ export default function CommandCenter() {
                   if (!v) return 'AWAITING SYNC'
                   const yda = !vitals[todayISO]
                   return (<>
-                    STEPS <b>{v.steps != null ? v.steps.toLocaleString() : '—'}</b>
+                    {yda ? 'YDA ' : ''}STEPS <b>{v.steps != null ? v.steps.toLocaleString() : '—'}</b>
                     {' · EX '}<b>{v.exercise != null ? `${v.exercise}M` : '—'}</b>
-                    {yda ? ' · YDA' : ''}
                     {heatCal ? <> · WK <b>{heatCal.cur.sDays}/{STEP_WK}</b>·<b>{heatCal.cur.eDays}/{EX_WK}</b>·<b>{heatCal.cur.lDays}/{LIFT_WK}</b></> : null}
                   </>)
                 })()}
