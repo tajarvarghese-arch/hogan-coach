@@ -39,9 +39,9 @@ export function sessionKind(d) {
   if (iso === TEST_ISO) return 'TEST'
   if (![0, 1, 3, 4].includes(dow)) return null
   const weeksSince = Math.round((mondayOf(d) - mondayOf(new Date(2026, 6, 27))) / (7 * dayMs))
-  /* pattern 1 (A on Mon/Thu): week 0 and odd weeks after Hawaii;
-     pattern 2 (A on Tue/Fri): even weeks from 2 on */
-  const aOnMon = weeksSince === 0 || weeksSince % 2 === 1
+  /* week 1 opens with B (user's call — ease in with pullups, bench
+     lands Tuesday); A holds Mon/Thu only on odd weeks after Hawaii */
+  const aOnMon = weeksSince % 2 === 1
   const isA = aOnMon ? dow === 0 || dow === 3 : dow === 1 || dow === 4
   return isA ? 'A' : 'B'
 }

@@ -6,10 +6,10 @@ const d = (y, m, day) => new Date(y, m - 1, day)
 
 test('sessionKind mirrors the seeded calendar', () => {
   assert.equal(sessionKind(d(2026, 7, 26)), null, 'Sunday before start')
-  assert.equal(sessionKind(d(2026, 7, 27)), 'A', 'wk1 Mon A')
-  assert.equal(sessionKind(d(2026, 7, 28)), 'B', 'wk1 Tue B')
+  assert.equal(sessionKind(d(2026, 7, 27)), 'B', 'wk1 Mon B (week one opens easy)')
+  assert.equal(sessionKind(d(2026, 7, 28)), 'A', 'wk1 Tue A')
   assert.equal(sessionKind(d(2026, 7, 29)), null, 'Wednesdays rest')
-  assert.equal(sessionKind(d(2026, 7, 31)), 'B', 'wk1 Fri B')
+  assert.equal(sessionKind(d(2026, 7, 31)), 'A', 'wk1 Fri A')
   assert.equal(sessionKind(d(2026, 8, 3)), 'HK', 'Hawaii Mon')
   assert.equal(sessionKind(d(2026, 8, 5)), null, 'Hawaii Wed off (helicopter)')
   assert.equal(sessionKind(d(2026, 8, 8)), 'HK', 'Hawaii Sat')
@@ -22,23 +22,24 @@ test('sessionKind mirrors the seeded calendar', () => {
   assert.equal(sessionKind(d(2026, 10, 5)), null, 'after program end')
 })
 
-test('nextLiftSession: before the program points at day one', () => {
+test('nextLiftSession: before the program points at day one (B)', () => {
   const s = nextLiftSession(d(2026, 7, 26), {})
   assert.equal(s.iso, '2026-07-27')
   assert.equal(s.when, 'TOMORROW')
-  assert.equal(s.headline, 'A — BENCH 135 3×5 + RDL 95')
+  assert.equal(s.headline, 'B — PULLUPS + SWINGS')
 })
 
 test('nextLiftSession: logged today advances to the next session', () => {
-  const lifts = { '2026-07-27': { w: 135, reps: [5, 5, 5], rdl: 95, mt: 1 } }
+  const lifts = { '2026-07-27': { w: 0, reps: [], rdl: null, mt: 1 } }
   const s = nextLiftSession(d(2026, 7, 27), lifts, true)
   assert.equal(s.iso, '2026-07-28')
-  assert.equal(s.kind, 'B')
+  assert.equal(s.kind, 'A')
 })
 
 test('nextLiftSession: A-session weight follows the log rules', () => {
-  const lifts = { '2026-07-27': { w: 135, reps: [5, 5, 5], rdl: 95, mt: 1 } }
-  const s = nextLiftSession(d(2026, 7, 29), lifts)
+  const lifts = { '2026-07-28': { w: 135, reps: [5, 5, 5], rdl: 95, mt: 1 } }
+  const s = nextLiftSession(d(2026, 7, 31), lifts)
+  assert.equal(s.iso, '2026-07-31')
   assert.equal(s.kind, 'A')
   assert.ok(s.headline.includes('BENCH 137.5'), s.headline)
   assert.ok(s.headline.includes('RDL 100'), s.headline)
