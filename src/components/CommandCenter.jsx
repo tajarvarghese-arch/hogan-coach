@@ -2012,7 +2012,8 @@ export default function CommandCenter() {
                         <div className="cells">
                           {heatCal.weeks.map((col) =>
                             col.map((c) => {
-                              const has = !c.future && (c.steps != null || c.ex != null)
+                              /* a lift alone renders the dial — health data lands at 23:59, the morning lift should not wait for it */
+                              const has = !c.future && (c.steps != null || c.ex != null || c.lift)
                               return (
                                 <i key={c.iso}
                                   className={`${c.today ? 'today' : ''} ${c.future ? 'future' : ''} ${has ? 'has' : ''}`}
