@@ -1248,6 +1248,34 @@ export default function CommandCenter() {
     return { session: nextLiftSession(now, lifts, doneToday), doneToday }
   }, [lifts, streaks, todayISO]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  /* visible entry form — weight + per-set reps, pre-filled with the
+     prescription; whatever is actually logged drives the next session */
+  const [liftFormOpen, setLiftFormOpen] = useState(false)
+  const [liftW, setLiftW] = useState('')
+  const [liftReps, setLiftReps] = useState(['5', '5', '5'])
+  const [liftRdlW, setLiftRdlW] = useState('')
+  const liftMark = () => { if (!onDates('lift').has(todayISO)) toggleMark('lift', todayISO) }
+  const openLiftForm = () => {
+    const S = liftMenu.session
+    if (!S) return
+    if (S.kind === 'B' || S.kind === 'HK') { liftMark(); return }
+    if (!liftFormOpen) {
+      setLiftW(String(S.bench ?? ''))
+      setLiftRdlW(S.rdl != null ? String(S.rdl) : '')
+      setLiftReps(S.kind === 'TEST' ? [''] : ['5', '5', '5'])
+    }
+    setLiftFormOpen((v) => !v)
+  }
+  const submitLiftForm = () => {
+    const w = parseFloat(liftW)
+    const reps = liftReps.map((r) => parseInt(r, 10)).filter(Number.isFinite)
+    if (!Number.isFinite(w) || !reps.length) return
+    const rdl = parseFloat(liftRdlW)
+    setLifts((l) => ({ ...l, [todayISO]: { w, reps, rdl: Number.isFinite(rdl) ? rdl : null, mt: Date.now() } }))
+    liftMark()
+    setLiftFormOpen(false)
+  }
+
   /* ---------- iris log — private eye-flare journal ----------
      Lives behind a quiet footer eye; the data renders only while the
      overlay is open. Marks + cause notes sync per-day (mergeEyes). */
@@ -1977,15 +2005,47 @@ export default function CommandCenter() {
                 <span className="chev"> &nbsp;{vitalsOpen ? '▲ HIDE' : '▼ CHARTS'}</span>
               </span>
             </div>
-            {liftMenu.session && (
-              <button className="lift-bar"
-                title="Tap to log — LIFT <weight> <reps>"
-                onClick={() => { setCmdOpen(true); setCmdDraft('LIFT ') }}>
-                <u>{liftMenu.doneToday ? '✓ LIFTED · NEXT' : 'NEXT LIFT'} · {liftMenu.session.when}</u>
-                <b>{liftMenu.session.headline}</b>
-                <span>{liftMenu.session.detail}</span>
-              </button>
-            )}
+            {liftMenu.session && (() => {
+              const S = liftMenu.session
+              const needsNumbers = S.kind === 'A' || S.kind === 'TEST'
+              return (
+                <div className="lift-bar">
+                  <u>{liftMenu.doneToday ? '✓ LIFTED · NEXT' : 'NEXT LIFT'} · {S.when}</u>
+                  <b>{S.headline}</b>
+                  <div className="lift-steps">
+                    {S.steps.map((st, i) => (
+                      <p key={i}><i>{String(i + 1).padStart(2, '0')}</i><span>{st}</span></p>
+                    ))}
+                  </div>
+                  {liftFormOpen && needsNumbers ? (
+                    <div className="lift-form">
+                      <label><u>BENCH LB</u>
+                        <input inputMode="decimal" value={liftW} aria-label="Bench weight"
+                          onChange={(e) => setLiftW(e.target.value)} /></label>
+                      {S.kind === 'A' ? liftReps.map((r, i) => (
+                        <label key={i}><u>SET {i + 1}</u>
+                          <input inputMode="numeric" value={r} aria-label={`Reps set ${i + 1}`}
+                            onChange={(e) => setLiftReps((a) => a.map((x, j) => (j === i ? e.target.value : x)))} /></label>
+                      )) : (
+                        <label><u>AMRAP</u>
+                          <input inputMode="numeric" value={liftReps[0]} aria-label="AMRAP reps"
+                            onChange={(e) => setLiftReps([e.target.value])} /></label>
+                      )}
+                      {S.kind === 'A' && (
+                        <label><u>RDL LB</u>
+                          <input inputMode="decimal" value={liftRdlW} aria-label="RDL weight"
+                            onChange={(e) => setLiftRdlW(e.target.value)} /></label>
+                      )}
+                      <button className="lift-log" onClick={submitLiftForm}>LOG →</button>
+                    </div>
+                  ) : (
+                    <button className="lift-open" onClick={openLiftForm}>
+                      {needsNumbers ? (liftFormOpen ? '× CLOSE' : '+ LOG WEIGHT & SETS') : '✓ MARK SESSION DONE'}
+                    </button>
+                  )}
+                </div>
+              )
+            })()}
             {vitalsOpen && (!heatCal || heatCal.logged === 0 ? (
               <div className="agenda-empty">Awaiting health data — history appears after your first sync.</div>
             ) : (

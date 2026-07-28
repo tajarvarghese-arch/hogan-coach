@@ -64,27 +64,43 @@ export function nextLiftSession(now, lifts, todayLogged = false) {
       const r = nextRDL(lifts)
       const warm = Math.round((w * 0.8) / 5) * 5
       return {
-        iso, when, kind,
+        iso, when, kind, bench: w, rdl: r,
         headline: `A — BENCH ${w} 3×5 + RDL ${r}`,
-        detail: `RAMP 45×5 · 95×5 · ${warm}×3 — THEN 3×5 @ ${w} (REST 90S, 1 IN THE TANK) — RDL ${r} 2×8`,
+        steps: [
+          `RAMP: BAR 45 ×5 · 95 ×5 · ${warm} ×3 (short rests)`,
+          `BENCH ${w} — 3 sets of 5 · rest 90s · leave 1 in the tank`,
+          `RDL ${r} — 2 sets of 8 · rest 60s`,
+        ],
       }
     }
     if (kind === 'B') return {
       iso, when, kind,
       headline: 'B — PULLUPS + SWINGS',
-      detail: 'LADDER 1·1·2 ×2 (NEVER TO FAILURE) — SWINGS 3×10 OR HIP THRUSTS 2×10 — 1 SLOW NEGATIVE',
+      steps: [
+        'LADDER: 1 pullup · rest · 1 · rest · 2 — run it twice, never to failure',
+        'SWINGS 3×10 or HIP THRUSTS 2×10 — crisp and snappy',
+        'FINISHER: 1 slow negative, 5 seconds down',
+      ],
     }
     if (kind === 'HK') return {
       iso, when, kind,
       headline: 'HABIT KEEPER (VACATION)',
-      detail: 'LADDER 1·1·2 ANYWHERE + 20 HIP THRUSTS — 5-10 MIN, ANY ATTEMPT COUNTS',
+      steps: [
+        'LADDER 1 · 1 · 2 on anything you can hang from',
+        '20 hip thrusts or a steep walk — 5-10 min total',
+        'Any attempt counts as done',
+      ],
     }
     if (kind === 'TEST') {
       const w = computeNextBench(lifts) ?? 170
       return {
-        iso, when, kind,
+        iso, when, kind, bench: w,
         headline: `TEST DAY ⚑ — AMRAP @ ${w}`,
-        detail: `RAMP, THEN ONE AMRAP SET @ ${w} (STOP WHEN FORM BREAKS) + MAX STRICT PULLUPS — LOG BOTH`,
+        steps: [
+          `RAMP: 45 ×5 · 95 ×5 · 135 ×3 · ${Math.round((w * 0.9) / 5) * 5} ×1`,
+          `ONE all-out set @ ${w} — stop when form breaks, not at failure`,
+          'THEN: max strict pullups, one set — log both numbers',
+        ],
       }
     }
   }
