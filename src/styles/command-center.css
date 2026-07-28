@@ -297,11 +297,73 @@
   .bar-clock { border-left: 0; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
   .bar-clock time { font-size: 13px; }
 
+  .fc-rain { order: 0; }
+
   /* scrolled: masthead collapses to brand + clock sliver */
   .term-bar.compact .bar-stats { display: none; }
   .term-bar.compact .bar-brand { padding: 6px 14px; }
   .term-bar.compact .bar-clock { padding: 5px 14px; }
 }
+
+/* ---------- FORECAST RAIN STRIP ----------
+   tap a forecast day: 8 three-hour precipitation bars from 07:00 */
+.bar-stat.fc { background: none; font: inherit; color: inherit; cursor: pointer; }
+.bar-stat.fc.on { background: #0d1218; box-shadow: inset 0 -2px 0 var(--fam); }
+.fc-rain {
+  width: 100%;
+  order: 10;
+  border-top: 1px solid var(--line);
+  background: #0b0e12;
+  padding: 7px 14px 9px;
+}
+.fc-rain-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.fc-rain-head u {
+  text-decoration: none;
+  color: var(--fam);
+  font-size: 9px;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+.fc-rain-head span { color: var(--dim); font-size: 11px; cursor: pointer; padding: 2px 4px; }
+.fc-rain-head span:hover { color: var(--fam); }
+.fc-rain-bars {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+  align-items: end;
+}
+.fc-rain-bars .rb {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+}
+.fc-rain-bars .rb b { font-size: 9px; font-weight: 700; color: var(--text); }
+.fc-rain-bars .rb i {
+  width: 100%;
+  max-width: 26px;
+  background: rgba(87, 199, 255, 0.35);
+  box-shadow: inset 0 1px 0 rgba(87, 199, 255, 0.5);
+}
+.fc-rain-bars .rb i.wet {
+  background: var(--fam);
+  box-shadow: 0 0 6px rgba(87, 199, 255, 0.5);
+}
+.fc-rain-bars .rb u {
+  text-decoration: none;
+  color: var(--dim);
+  font-size: 8px;
+  letter-spacing: 1px;
+}
+.fc-rain-empty { color: var(--dim); font-size: 10px; letter-spacing: 1px; padding: 6px 0; }
+.term-bar.compact .fc-rain { display: none; }
+.term.night .fc-rain-bars .rb i.wet { box-shadow: none; }
 
 /* ---------- MARQUEE TAPE ---------- */
 .tape {

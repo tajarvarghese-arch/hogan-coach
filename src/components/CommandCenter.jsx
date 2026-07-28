@@ -62,7 +62,7 @@ const WX_URL =
   `https://api.open-meteo.com/v1/forecast?latitude=${WX_LAT}&longitude=${WX_LON}` +
   `&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m` +
   `&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset,weather_code` +
-  `&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FNew_York&forecast_days=5`
+  `&hourly=precipitation_probability&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FNew_York&forecast_days=6`
 
 /* NOAA tide predictions — Cos Cob Harbor, Greenwich CT (no key, CORS-open) */
 const TIDE_STATION = '8469549'
@@ -947,12 +947,15 @@ export default function CommandCenter() {
           precip: d.daily.precipitation_probability_max[0],
           sunrise: (d.daily.sunrise[0] || '').slice(11, 16),
           sunset: (d.daily.sunset[0] || '').slice(11, 16),
-          days: (d.daily.time || []).map((t, i) => ({
+          days: (d.daily.time || []).slice(0, 5).map((t, i) => ({
             date: t,
             code: d.daily.weather_code?.[i] ?? 0,
             hi: Math.round(d.daily.temperature_2m_max[i]),
             lo: Math.round(d.daily.temperature_2m_min[i]),
           })),
+          hourly: d.hourly && Array.isArray(d.hourly.time)
+            ? { time: d.hourly.time, prob: d.hourly.precipitation_probability || [] }
+            : null,
         })
       } catch { /* keep last reading */ }
     }
@@ -1376,6 +1379,32 @@ export default function CommandCenter() {
     return () => io.disconnect()
   }, [hasFam])
 
+  /* forecast rain detail — tap a day icon, get 8 three-hour bars
+     from 07:00 that day through 04:00 the next morning */
+  const [fcRain, setFcRain] = useState(null)
+  const fcRainBars = useMemo(() => {
+    if (!fcRain || !wx?.hourly) return null
+    const idx = new Map(wx.hourly.time.map((t, i) => [t, i]))
+    const base = parseMid(fcRain)
+    const bars = []
+    for (let b = 0; b < 8; b++) {
+      let peak = null
+      for (let h = 0; h < 3; h++) {
+        const t = new Date(base.getTime() + (7 + b * 3 + h) * 3600e3)
+        const key = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}T${String(t.getHours()).padStart(2, '0')}:00`
+        const i = idx.get(key)
+        const v = i != null ? wx.hourly.prob[i] : null
+        if (typeof v === 'number' && (peak == null || v > peak)) peak = v
+      }
+      const hr = (7 + b * 3) % 24
+      bars.push({
+        label: `${hr % 12 === 0 ? 12 : hr % 12}${hr < 12 ? 'A' : 'P'}`,
+        p: peak,
+      })
+    }
+    return bars.some((x) => x.p != null) ? bars : null
+  }, [fcRain, wx])
+
   /* all habits logged today: the masthead cursor stops blinking and
      holds solid green — the day's quiet checkmark */
   const allHabitsDone = visibleHabits.length > 0 && visibleHabits.every((h) => onDates(h.id).has(todayISO))
@@ -1510,10 +1539,12 @@ export default function CommandCenter() {
           <div className="bar-stat now"><u>GREENWICH</u><b>{wx ? `${wx.temp}°F ${wx.label}` : '—'}</b></div>
           {(wx?.days?.length ? wx.days.slice(0, 5) : Array.from({ length: 5 }, () => null)).map((day, i) =>
             day ? (
-              <div className="bar-stat fc" key={day.date} title={`${day.date} · ${wmoLabel(day.code)}`}>
+              <button className={`bar-stat fc ${fcRain === day.date ? 'on' : ''}`} key={day.date}
+                title={`${day.date} · ${wmoLabel(day.code)} — tap for hourly rain`}
+                onClick={() => setFcRain((cur) => (cur === day.date ? null : day.date))}>
                 <u>{i === 0 ? 'TODAY' : new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(parseMid(day.date)).toUpperCase()}</u>
                 <b><WxIcon code={day.code} size={13} />{day.hi}°<i>/{day.lo}°</i></b>
-              </div>
+              </button>
             ) : (
               <div className="bar-stat fc" key={`ph${i}`}>
                 <u>·</u>
@@ -1522,6 +1553,27 @@ export default function CommandCenter() {
             )
           )}
         </div>
+        {fcRain && (
+          <div className="fc-rain">
+            <div className="fc-rain-head">
+              <u>RAIN ODDS · {fcRain === wx?.days?.[0]?.date ? 'TODAY' : new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'short', day: 'numeric' }).format(parseMid(fcRain)).toUpperCase()}</u>
+              <span role="button" tabIndex={0} onClick={() => setFcRain(null)} onKeyDown={keyActivate(() => setFcRain(null))}>✕</span>
+            </div>
+            {fcRainBars ? (
+              <div className="fc-rain-bars">
+                {fcRainBars.map((b2, i) => (
+                  <div className="rb" key={i} title={`${b2.label} — ${b2.p != null ? b2.p + '%' : 'no data'}`}>
+                    <b>{b2.p != null ? `${b2.p}%` : '—'}</b>
+                    <i style={{ height: `${Math.max(3, (b2.p || 0) * 0.5)}px` }} className={b2.p >= 50 ? 'wet' : ''} />
+                    <u>{b2.label}</u>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="fc-rain-empty">HOURLY DATA NOT SYNCED YET — REOPEN IN A MINUTE</div>
+            )}
+          </div>
+        )}
         <div className="bar-clock">
           <time>{clock}<span style={{ fontSize: 9, color: 'var(--dim)', letterSpacing: 1 }}> ET</span></time>
           <button className="sober-chip" onClick={() => setEditSober((v) => !v)} title="Sober day counter — tap to set start date">
