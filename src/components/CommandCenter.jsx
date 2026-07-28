@@ -1247,7 +1247,7 @@ export default function CommandCenter() {
   /* the lift menu: what the program prescribes next, shown before the
      session so there is nothing to remember at the bench */
   const liftMenu = useMemo(() => {
-    const doneToday = !!lifts[todayISO] || onDates('lift').has(todayISO)
+    const doneToday = (!!lifts[todayISO] && !lifts[todayISO].del) || onDates('lift').has(todayISO)
     return { session: nextLiftSession(now, lifts, doneToday), doneToday }
   }, [lifts, streaks, todayISO]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -1268,6 +1268,13 @@ export default function CommandCenter() {
       setLiftReps(S.kind === 'TEST' ? [''] : ['5', '5', '5'])
     }
     setLiftFormOpen((v) => !v)
+  }
+  const undoLift = () => {
+    setLifts((l) => (l[todayISO] && !l[todayISO].del
+      ? { ...l, [todayISO]: { w: 0, reps: [], rdl: null, mt: Date.now(), del: 1 } }
+      : l))
+    if (onDates('lift').has(todayISO)) toggleMark('lift', todayISO)
+    setLiftFormOpen(false)
   }
   const submitLiftForm = () => {
     const w = parseFloat(liftW)
@@ -2094,6 +2101,9 @@ export default function CommandCenter() {
                     <button className="lift-open" onClick={openLiftForm}>
                       {needsNumbers ? (liftFormOpen ? '× CLOSE' : '+ LOG WEIGHT & SETS') : '✓ MARK SESSION DONE'}
                     </button>
+                  )}
+                  {liftMenu.doneToday && (
+                    <button className="lift-undo" onClick={undoLift}>↩ UNDO TODAY'S LOG</button>
                   )}
                 </div>
               )

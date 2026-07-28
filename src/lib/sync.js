@@ -160,6 +160,7 @@ export function normLifts(v) {
       reps: Array.isArray(e.reps) ? e.reps.map(Number).filter(Number.isFinite) : [],
       rdl: typeof e.rdl === 'number' ? e.rdl : null,
       mt: typeof e.mt === 'number' ? e.mt : 0,
+      ...(e.del ? { del: 1 } : {}),
     }
   }
   return out
@@ -178,7 +179,7 @@ export function mergeLifts(remote, local) {
    miss twice at the same weight -> drop 10%, rounded to 2.5 */
 export function computeNextBench(lifts) {
   const entries = Object.entries(normLifts(lifts))
-    .filter(([, e]) => typeof e.w === 'number')
+    .filter(([, e]) => !e.del && typeof e.w === 'number' && e.w > 0)
     .sort((a, b) => a[0].localeCompare(b[0]))
   if (!entries.length) return null
   const clean = (e) => e.reps.length >= 3 && e.reps.slice(0, 3).every((r) => r >= 5)

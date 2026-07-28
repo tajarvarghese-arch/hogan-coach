@@ -180,3 +180,13 @@ test('mergeLifts per-day LWW and garbage tolerance', () => {
   assert.deepEqual(m['2026-07-27'].reps, [5, 5, 4])
   assert.deepEqual(mergeLifts('nope', null), {})
 })
+
+test('a delogged (tombstoned) lift day is ignored and survives merges', () => {
+  const lifts = {
+    '2026-07-27': { w: 135, reps: [5, 5, 5], mt: 1 },
+    '2026-07-28': { w: 0, reps: [], rdl: null, mt: 9, del: 1 },
+  }
+  assert.equal(computeNextBench(lifts), 137.5, 'tombstone does not count as a session')
+  const m = mergeLifts({ '2026-07-28': { w: 137.5, reps: [5, 5, 5], mt: 2 } }, lifts)
+  assert.equal(m['2026-07-28'].del, 1, 'newer tombstone beats the stale remote log')
+})
