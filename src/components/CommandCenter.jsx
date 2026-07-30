@@ -178,10 +178,10 @@ function BookHeatMap({ rows, themes, onOpen, keyActivate, pctFn, usdFn }) {
     ro.observe(el)
     return () => ro.disconnect()
   }, [])
-  const h = Math.round(Math.min(170, Math.max(110, w * 0.2)))
+  const h = Math.round(Math.min(260, Math.max(160, w * 0.55)))
   const frames = useMemo(() => {
     if (!w || !themes.length) return []
-    const PAD = 2, HEAD = 11
+    const PAD = 3, HEAD = 14
     const outer = layoutTreemap(themes.map((t) => ({ t, key: t.id, weight: t.mv })), w, h)
     return outer.map(({ t, x, y, w: fw, h: fh }) => {
       const iw = Math.max(0, fw - 2 * PAD - 2)
@@ -190,18 +190,27 @@ function BookHeatMap({ rows, themes, onOpen, keyActivate, pctFn, usdFn }) {
         ? layoutTreemap(t.rows.map((r) => ({ r, key: r.sym, weight: Math.abs(r.mv) })), iw, ih)
           .map((c) => ({ ...c, x: c.x + x + PAD + 1, y: c.y + y + HEAD + 1 }))
         : []
-      return { t, x, y, w: fw, h: fh, cells, label: fw >= 52 && fh >= 26 }
+      return { t, x, y, w: fw, h: fh, cells, label: fw >= 46 && fh >= 30, showPnl: fw >= 96 && fh >= 30 }
     })
   }, [themes, w, h])
   const maxAbs = Math.max(0.01, ...rows.map((r) => Math.abs(r.chgPct)))
   return (
     <div className="heatmap" ref={boxRef} style={{ height: h }} role="button" tabIndex={0}
       aria-label="Book heat map — theses and positions" onClick={onOpen} onKeyDown={keyActivate(onOpen)}>
-      {frames.map(({ t, x, y, w: fw, h: fh, cells, label }) => (
+      {frames.map(({ t, x, y, w: fw, h: fh, label, showPnl }) => (
         <em key={t.id} className="hm-frame"
           title={`${t.name} · ${usdFn(t.mv)} · day ${(t.dayPnl >= 0 ? '+' : '') + usdFn(t.dayPnl)}`}
           style={{ left: x, top: y, width: Math.max(0, fw - 2), height: Math.max(0, fh - 2) }}>
-          {label && <u>{t.name}</u>}
+          {label && (
+            <u>
+              {t.name}
+              {showPnl && (
+                <s className={t.dayPnl >= 0 ? 'pos' : 'neg'}>
+                  {(t.dayPnl >= 0 ? '+' : '−') + usdFn(Math.abs(t.dayPnl))}
+                </s>
+              )}
+            </u>
+          )}
         </em>
       ))}
       {frames.flatMap(({ cells }) =>
@@ -1930,6 +1939,9 @@ export default function CommandCenter() {
                           <b className={cls(t.dayPnl)}>{(t.dayPnl >= 0 ? '+' : '−') + usdShort(Math.abs(t.dayPnl))}</b>
                           <i className={t.dayPnl >= 0 ? 'up' : 'down'} style={{ height: bar(t.dayPnl) }} />
                           <u>{t.name}</u>
+                          <span className="bb-syms">
+                            {t.rows.map((r) => <em key={r.sym}>{r.sym}</em>)}
+                          </span>
                         </div>
                       ))}
                       <div className="bb net" title="Whole book, today">
