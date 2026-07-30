@@ -32,6 +32,18 @@ const seedBook = [
 ]
 const netLiqSeed = 9593209.6
 
+/* Thesis map — which positions belong to which bet. Anything unmapped
+   falls into IDIO automatically, so new positions never break it.
+   Edit via Claude when a thesis changes. */
+const seedThemes = [
+  { id: 'health', name: 'HEALTH L', syms: ['UNH', 'MDT', 'BSX'] },
+  { id: 'megacap', name: 'MEGACAP S', syms: ['AAPL', 'GOOG'] },
+  { id: 'consumer', name: 'CONSUMER S', syms: ['COST', 'SBUX', 'NFLX'] },
+  { id: 'semi', name: 'SEMI/PWR S', syms: ['ASML', 'OKLO'] },
+  { id: 'industrial', name: 'INDL S', syms: ['CAT'] },
+]
+const themeOf = (sym) => seedThemes.find((t) => t.syms.includes(sym))
+
 /* ---------- storage keys ---------- */
 const K = {
   sober: 'tajar-sober-start',
@@ -152,8 +164,9 @@ function Boot({ done }) {
   )
 }
 
-/* book treemap — squarified: area = position weight, color = day move */
-function BookHeatMap({ rows, onOpen, keyActivate, pctFn, usdFn }) {
+/* book treemap — two levels: thesis frames partition the canvas by
+   exposure, positions squarify inside their frame; color = day move */
+function BookHeatMap({ rows, themes, onOpen, keyActivate, pctFn, usdFn }) {
   const boxRef = useRef(null)
   const [w, setW] = useState(0)
   useEffect(() => {
@@ -165,32 +178,51 @@ function BookHeatMap({ rows, onOpen, keyActivate, pctFn, usdFn }) {
     ro.observe(el)
     return () => ro.disconnect()
   }, [])
-  const h = Math.round(Math.min(150, Math.max(96, w * 0.16)))
-  const rects = useMemo(() => {
-    if (!w) return []
-    return layoutTreemap(rows.map((r) => ({ r, key: r.sym, weight: Math.abs(r.mv) })), w, h)
-  }, [rows, w, h])
+  const h = Math.round(Math.min(170, Math.max(110, w * 0.2)))
+  const frames = useMemo(() => {
+    if (!w || !themes.length) return []
+    const PAD = 2, HEAD = 11
+    const outer = layoutTreemap(themes.map((t) => ({ t, key: t.id, weight: t.mv })), w, h)
+    return outer.map(({ t, x, y, w: fw, h: fh }) => {
+      const iw = Math.max(0, fw - 2 * PAD - 2)
+      const ih = Math.max(0, fh - HEAD - PAD - 2)
+      const cells = iw > 8 && ih > 8
+        ? layoutTreemap(t.rows.map((r) => ({ r, key: r.sym, weight: Math.abs(r.mv) })), iw, ih)
+          .map((c) => ({ ...c, x: c.x + x + PAD + 1, y: c.y + y + HEAD + 1 }))
+        : []
+      return { t, x, y, w: fw, h: fh, cells, label: fw >= 52 && fh >= 26 }
+    })
+  }, [themes, w, h])
   const maxAbs = Math.max(0.01, ...rows.map((r) => Math.abs(r.chgPct)))
   return (
     <div className="heatmap" ref={boxRef} style={{ height: h }} role="button" tabIndex={0}
-      aria-label="Book heat map — open positions" onClick={onOpen} onKeyDown={keyActivate(onOpen)}>
-      {rects.map(({ r, x, y, w: rw, h: rh }) => {
-        const a = 0.18 + 0.72 * (Math.abs(r.chgPct) / maxAbs)
-        const rgb = r.chgPct >= 0 ? '61, 220, 132' : '255, 69, 58'
-        const showSym = rw >= 34 && rh >= 14
-        const showPct = rw >= 44 && rh >= 30
-        return (
-          <i key={r.sym}
-            title={`${r.sym} ${pctFn(r.chgPct)} · ${usdFn(Math.abs(r.mv))}`}
-            style={{
-              left: x, top: y, width: Math.max(0, rw - 1), height: Math.max(0, rh - 1),
-              background: `rgba(${rgb}, ${a.toFixed(2)})`,
-            }}>
-            {showSym && <b>{r.sym}</b>}
-            {showPct && <span>{pctFn(r.chgPct)}</span>}
-          </i>
-        )
-      })}
+      aria-label="Book heat map — theses and positions" onClick={onOpen} onKeyDown={keyActivate(onOpen)}>
+      {frames.map(({ t, x, y, w: fw, h: fh, cells, label }) => (
+        <em key={t.id} className="hm-frame"
+          title={`${t.name} · ${usdFn(t.mv)} · day ${(t.dayPnl >= 0 ? '+' : '') + usdFn(t.dayPnl)}`}
+          style={{ left: x, top: y, width: Math.max(0, fw - 2), height: Math.max(0, fh - 2) }}>
+          {label && <u>{t.name}</u>}
+        </em>
+      ))}
+      {frames.flatMap(({ cells }) =>
+        cells.map(({ r, x, y, w: rw, h: rh }) => {
+          const a = 0.18 + 0.72 * (Math.abs(r.chgPct) / maxAbs)
+          const rgb = r.chgPct >= 0 ? '61, 220, 132' : '255, 69, 58'
+          const showSym = rw >= 34 && rh >= 14
+          const showPct = rw >= 44 && rh >= 30
+          return (
+            <i key={r.sym}
+              title={`${r.sym} ${pctFn(r.chgPct)} · ${usdFn(Math.abs(r.mv))}`}
+              style={{
+                left: x, top: y, width: Math.max(0, rw - 1), height: Math.max(0, rh - 1),
+                background: `rgba(${rgb}, ${a.toFixed(2)})`,
+              }}>
+              {showSym && <b>{r.sym}</b>}
+              {showPct && <span>{pctFn(r.chgPct)}</span>}
+            </i>
+          )
+        })
+      )}
     </div>
   )
 }
@@ -1033,6 +1065,20 @@ export default function CommandCenter() {
       return { ...p, chgPct, dayPnl, mv: p.qty * p.last }
     }), [book])
 
+  /* thesis aggregation — exposure and day P&L per bet */
+  const themeAgg = useMemo(() => {
+    const buckets = seedThemes.map((t) => ({ ...t, rows: [] }))
+    const idio = { id: 'idio', name: 'IDIO', rows: [] }
+    for (const r of rows) (themeOf(r.sym) ? buckets.find((b) => b.syms.includes(r.sym)) : idio).rows.push(r)
+    return [...buckets, idio]
+      .filter((t) => t.rows.length)
+      .map((t) => ({
+        ...t,
+        mv: t.rows.reduce((sm, r) => sm + Math.abs(r.mv), 0),
+        dayPnl: t.rows.reduce((sm, r) => sm + r.dayPnl, 0),
+      }))
+  }, [rows])
+
   const mkt = useMemo(() => {
     const dayPnl = rows.reduce((s, r) => s + r.dayPnl, 0)
     const baseRows = bookBase?.rows || seedBook
@@ -1865,11 +1911,36 @@ export default function CommandCenter() {
               </div>
               {/* whole-book squarified treemap — area = position weight,
                   color intensity = move size; tap opens the book */}
-              <BookHeatMap rows={rows} onOpen={() => setMktOpen(true)}
+              <BookHeatMap rows={rows} themes={themeAgg} onOpen={() => setMktOpen(true)}
                 keyActivate={keyActivate} pctFn={pct} usdFn={usdShort} />
             </div>
           ) : (
             <div className="pf-table">
+              {/* day P&L bridge — what each thesis contributed today */}
+              {themeAgg.length > 1 && (() => {
+                const sorted = [...themeAgg].sort((a, b) => Math.abs(b.dayPnl) - Math.abs(a.dayPnl))
+                const peak = Math.max(1, ...sorted.map((t) => Math.abs(t.dayPnl)), Math.abs(mkt.dayPnl))
+                const bar = (v) => Math.max(3, Math.round((Math.abs(v) / peak) * 64))
+                return (
+                  <div className="bridge">
+                    <u>DAY P&amp;L BY THESIS → NET <b className={cls(mkt.dayPnl)}>{(mkt.dayPnl >= 0 ? '+' : '') + usdShort(mkt.dayPnl)}</b></u>
+                    <div className="bridge-bars">
+                      {sorted.map((t) => (
+                        <div className="bb" key={t.id} title={`${t.name} · ${t.rows.map((r) => r.sym).join(' ')} · ${(t.dayPnl >= 0 ? '+' : '−') + usdShort(Math.abs(t.dayPnl))}`}>
+                          <b className={cls(t.dayPnl)}>{(t.dayPnl >= 0 ? '+' : '−') + usdShort(Math.abs(t.dayPnl))}</b>
+                          <i className={t.dayPnl >= 0 ? 'up' : 'down'} style={{ height: bar(t.dayPnl) }} />
+                          <u>{t.name}</u>
+                        </div>
+                      ))}
+                      <div className="bb net" title="Whole book, today">
+                        <b className={cls(mkt.dayPnl)}>{(mkt.dayPnl >= 0 ? '+' : '−') + usdShort(Math.abs(mkt.dayPnl))}</b>
+                        <i className={mkt.dayPnl >= 0 ? 'up' : 'down'} style={{ height: bar(mkt.dayPnl) }} />
+                        <u>NET</u>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })()}
               <table className="book">
                 <thead>
                   <tr><th>SYMBOL</th><th>LAST</th><th>CHG%</th><th>DAY P&amp;L</th><th>MKT VAL</th></tr>
