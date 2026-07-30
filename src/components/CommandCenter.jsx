@@ -31,7 +31,6 @@ const seedBook = [
   { sym: 'UNH', name: 'UNITEDHEALTH',      yh: 'UNH', qty: 15834,  avg: 294.204548,   last: 418.630005,    prevClose: 420.57 },
 ]
 const netLiqSeed = 9593209.6
-const symbolsParam = seedBook.map((p) => p.yh).join(',')
 
 /* ---------- storage keys ---------- */
 const K = {
@@ -536,9 +535,14 @@ export default function CommandCenter() {
   })
   const endBoot = () => { try { sessionStorage.setItem('tajar-booted', '1') } catch {} setBooting(false) }
 
-  /* portfolio (demoted) */
+  /* portfolio (demoted). The base truth comes from /api/book — filled
+     each morning by a Vercel cron pulling IBKR Flex, no desktop needed;
+     the compiled seeds are only the offline/keyless fallback. */
   const [book, setBook] = useState(seedBook)
+  const [bookBase, setBookBase] = useState(null) // { rows, netLiq, asOf }
   const [live, setLive] = useState(false)
+  const symbolsRef = useRef(seedBook.map((p) => p.yh).join(','))
+  symbolsRef.current = book.map((p) => p.yh).join(',')
   const [mktOpen, setMktOpen] = useState(() => load(K.mkt, false))
 
   /* life state */
@@ -737,7 +741,7 @@ export default function CommandCenter() {
     let alive = true
     async function pull() {
       try {
-        const res = await fetch(`/api/news?symbols=${symbolsParam}`)
+        const res = await fetch(`/api/news?symbols=${symbolsRef.current}`)
         if (!res.ok) throw new Error('no api')
         const data = await res.json()
         if (alive && Array.isArray(data?.items)) setWire(data.items.slice(0, 10))
@@ -864,6 +868,31 @@ export default function CommandCenter() {
     setSyncKey(k)
   }
 
+  /* cloud book — EOD positions from the Flex cron; replaces the seeds
+     whenever a reasonably fresh copy exists */
+  useEffect(() => {
+    if (!syncKey) return
+    let alive = true
+    ;(async () => {
+      try {
+        const res = await fetch('/api/book', { headers: { 'x-sync-key': syncKey } })
+        if (!alive || !res.ok) return
+        const body = await res.json()
+        if (!Array.isArray(body?.rows) || !body.rows.length) return
+        if (Date.now() - (body.asOf || 0) > 6 * 86400000) return
+        setBookBase({ rows: body.rows, netLiq: body.netLiq, asOf: body.asOf })
+        setBook((cur) =>
+          body.rows.map((r) => {
+            const held = cur.find((p) => p.sym === r.sym)
+            /* keep any live intraday price we already have for the symbol */
+            return held && held.last !== held.prevClose ? { ...r, last: held.last } : { ...r }
+          })
+        )
+      } catch { /* seeds remain */ }
+    })()
+    return () => { alive = false }
+  }, [syncKey, refreshTick])
+
   /* vitals — daily Apple Health stats posted by an iOS Shortcut to /api/health */
   useEffect(() => {
     if (!syncKey) { setVitals(null); return }
@@ -966,7 +995,7 @@ export default function CommandCenter() {
     let alive = true
     async function pull() {
       try {
-        const res = await fetch(`/api/quote?symbols=${symbolsParam}`)
+        const res = await fetch(`/api/quote?symbols=${symbolsRef.current}`)
         if (!res.ok) throw new Error('no api')
         const data = await res.json()
         if (!alive || !data?.quotes) return
@@ -1006,11 +1035,13 @@ export default function CommandCenter() {
 
   const mkt = useMemo(() => {
     const dayPnl = rows.reduce((s, r) => s + r.dayPnl, 0)
-    const netLiq = netLiqSeed + rows.reduce((s, r) => s + r.last * r.qty, 0) - seedBook.reduce((s, r) => s + r.last * r.qty, 0)
+    const baseRows = bookBase?.rows || seedBook
+    const baseNet = bookBase?.netLiq ?? netLiqSeed
+    const netLiq = baseNet + rows.reduce((s, r) => s + r.last * r.qty, 0) - baseRows.reduce((s, r) => s + r.last * r.qty, 0)
     const dayPct = (dayPnl / (netLiq - dayPnl)) * 100
     const movers = [...rows].sort((a, b) => Math.abs(b.dayPnl) - Math.abs(a.dayPnl)).slice(0, 4)
     return { dayPnl, netLiq, dayPct, movers }
-  }, [rows])
+  }, [rows, bookBase])
 
   const sober = useMemo(() => ({ days: daysSince(soberStart, now) }), [soberStart, now])
 
