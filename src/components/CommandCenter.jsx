@@ -16,24 +16,21 @@ import '../styles/command-center.css'
 /* ---------- PORTFOLIO SEED (demoted to a strip) ---------- */
 /* Positions pulled from the connected brokerage; live quotes via /api/quote. */
 const seedBook = [
-  { sym: 'AAPL', name: 'APPLE',            yh: 'AAPL', qty: -1500, avg: 160.7906,     last: 331.19989,     prevClose: 321.66 },
-  { sym: 'BSX', name: 'BOSTON SCIENTIFIC', yh: 'BSX', qty: 3416,   avg: 73.175,       last: 44.564999,     prevClose: 43.58 },
-  { sym: 'CAT', name: 'CATERPILLAR',       yh: 'CAT', qty: -240,   avg: 981.504457,   last: 887.840027,    prevClose: 894.54 },
-  { sym: 'COST', name: 'COSTCO',           yh: 'COST', qty: -510,  avg: 948.973608,   last: 930.578918,    prevClose: 924.590027 },
-  { sym: 'CRWV', name: 'COREWEAVE',        yh: 'CRWV', qty: -3000, avg: 116.902587,   last: 74.910004,     prevClose: 81.1 },
-  { sym: 'FISV', name: 'FISERV',           yh: 'FISV', qty: 1543,  avg: 64.803733,    last: 51.5,          prevClose: 49.97 },
-  { sym: 'GOOG', name: 'ALPHABET',         yh: 'GOOG', qty: -3000, avg: 346.462531,   last: 319.48999,     prevClose: 318.34 },
-  { sym: 'MDT', name: 'MEDTRONIC',         yh: 'MDT', qty: 13000,  avg: 76.661717,    last: 83.510002,     prevClose: 82.01 },
-  { sym: 'MU', name: 'MICRON',             yh: 'MU', qty: -150,    avg: 1133.327467,  last: 938.52002,     prevClose: 990.21 },
-  { sym: 'NBIS', name: 'NEBIUS',           yh: 'NBIS', qty: -500,  avg: 276.89748,    last: 199.085007,    prevClose: 220.97 },
-  { sym: 'NFLX', name: 'NETFLIX',          yh: 'NFLX', qty: -10000,avg: 73.222288,    last: 69.830002,     prevClose: 68.89 },
-  { sym: 'OKLO', name: 'OKLO',             yh: 'OKLO', qty: -600,  avg: 174.296667,   last: 41.310001,     prevClose: 44.0 },
-  { sym: 'PLSE', name: 'PULSE BIOSCIENCES',yh: 'PLSE', qty: 1488,  avg: 17.75,        last: 30.85,         prevClose: 31.0 },
-  { sym: 'SBUX', name: 'STARBUCKS',        yh: 'SBUX', qty: -1200, avg: 114.746808,   last: 104.660004,    prevClose: 103.21 },
-  { sym: 'SNDK', name: 'SANDISK',          yh: 'SNDK', qty: -62,   avg: 2275.808871,  last: 1493.859985,   prevClose: 1610.33 },
-  { sym: 'UNH', name: 'UNITEDHEALTH',      yh: 'UNH', qty: 15834,  avg: 294.204548,   last: 422.290009,    prevClose: 423.56 },
+  { sym: 'AAPL', name: 'APPLE',            yh: 'AAPL', qty: -1500, avg: 160.7906,     last: 331.924194,    prevClose: 338.19 },
+  { sym: 'ASML', name: 'ASML HOLDING',     yh: 'ASML', qty: -440,  avg: 1564.64007,   last: 1652.880005,   prevClose: 1550.69 },
+  { sym: 'BSX', name: 'BOSTON SCIENTIFIC', yh: 'BSX', qty: 3416,   avg: 73.175,       last: 45.115002,     prevClose: 46.04 },
+  { sym: 'CAT', name: 'CATERPILLAR',       yh: 'CAT', qty: -240,   avg: 981.504457,   last: 806.960022,    prevClose: 782.71 },
+  { sym: 'COST', name: 'COSTCO',           yh: 'COST', qty: -510,  avg: 948.973608,   last: 956.919983,    prevClose: 974.03 },
+  { sym: 'FISV', name: 'FISERV',           yh: 'FISV', qty: 1543,  avg: 64.803733,    last: 53.400002,     prevClose: 55.63 },
+  { sym: 'GOOG', name: 'ALPHABET',         yh: 'GOOG', qty: -3000, avg: 346.462531,   last: 331.929993,    prevClose: 335.76 },
+  { sym: 'MDT', name: 'MEDTRONIC',         yh: 'MDT', qty: 13000,  avg: 76.661717,    last: 85.489998,     prevClose: 87.54 },
+  { sym: 'NFLX', name: 'NETFLIX',          yh: 'NFLX', qty: -10000,avg: 73.222288,    last: 71.305,        prevClose: 73.63 },
+  { sym: 'OKLO', name: 'OKLO',             yh: 'OKLO', qty: -600,  avg: 174.296667,   last: 40.380001,     prevClose: 36.84 },
+  { sym: 'PLSE', name: 'PULSE BIOSCIENCES',yh: 'PLSE', qty: 1488,  avg: 17.75,        last: 35.259998,     prevClose: 34.25 },
+  { sym: 'SBUX', name: 'STARBUCKS',        yh: 'SBUX', qty: -1200, avg: 114.746808,   last: 105.93,        prevClose: 104.14 },
+  { sym: 'UNH', name: 'UNITEDHEALTH',      yh: 'UNH', qty: 15834,  avg: 294.204548,   last: 418.630005,    prevClose: 420.57 },
 ]
-const netLiqSeed = 9588213.8
+const netLiqSeed = 9593209.6
 const symbolsParam = seedBook.map((p) => p.yh).join(',')
 
 /* ---------- storage keys ---------- */
@@ -1745,20 +1742,47 @@ export default function CommandCenter() {
                 {renderRows(todaySchedule, false)}
               </div>
             )
-            return (
-              <div className="agenda-split">
-                <div className="agenda-col">
-                  <div className="agenda-col-head">PERSONAL</div>
-                  {todayPersonal.length === 0 && <div className="agenda-empty">Clear.</div>}
-                  {renderRows(todayPersonal, false)}
+            /* shared time axis — one rail; personal and family events at
+               the same hour sit on the same row, so the columns align */
+            return (() => {
+              const slots = new Map()
+              for (const e of todayPersonal) { if (!slots.has(e.start)) slots.set(e.start, { p: [], f: [] }); slots.get(e.start).p.push(e) }
+              for (const e of todayFamily) { if (!slots.has(e.start)) slots.set(e.start, { p: [], f: [] }); slots.get(e.start).f.push(e) }
+              const times = [...slots.keys()].sort()
+              const anyActive = todaySchedule.some((e) => nowHM >= e.start && nowHM < e.end)
+              const nextStart = anyActive ? null : times.find((t) => t > nowHM)
+              const cell = (list, fam) => (
+                <div className={`tl-cell ${fam ? 'fam' : ''}`}>
+                  {list.map((e, i) => (
+                    <div className="tl-item" key={i}>
+                      <h3>{e.title}</h3>
+                      {e.note && <p>{e.note}</p>}
+                      {nowHM >= e.start && nowHM < e.end && <span className="now">&#9679; NOW</span>}
+                    </div>
+                  ))}
                 </div>
-                <div className="agenda-col fam">
-                  <div className="agenda-col-head">FAMILY</div>
-                  {todayFamily.length === 0 && <div className="agenda-empty">Clear.</div>}
-                  {renderRows(todayFamily, true)}
+              )
+              return (
+                <div className="agenda-tl">
+                  <div className="tl-head"><span /><span className="col-p">PERSONAL</span><span className="col-f">FAMILY</span></div>
+                  {times.length === 0 && <div className="agenda-empty">No commitments today. Clear board.</div>}
+                  {times.map((t) => {
+                    const sl = slots.get(t)
+                    const end = (sl.p[0] || sl.f[0])?.end
+                    return (
+                      <div className="tl-row" key={t}>
+                        <div className="tl-time">
+                          {t}<small>{end}</small>
+                          {t === nextStart && <em>&#9656; NEXT</em>}
+                        </div>
+                        {cell(sl.p, false)}
+                        {cell(sl.f, true)}
+                      </div>
+                    )
+                  })}
                 </div>
-              </div>
-            )
+              )
+            })()
           })()}
 
           <div className="todo-add">

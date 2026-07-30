@@ -1810,3 +1810,35 @@ table.book tr.subtotal td:first-child {
 }
 .lift-undo:hover { border-color: var(--down); color: var(--down); }
 .term.night .lift-bar > u, .term.night .lift-steps i { color: #6552d8; }
+
+/* ---------- SHARED-AXIS AGENDA ----------
+   personal | family on one time rail: same hour, same row */
+.tl-head {
+  display: grid;
+  grid-template-columns: 58px 1fr 1fr;
+  padding: 7px 0 6px;
+  border-bottom: 1px solid var(--line);
+}
+.tl-head .col-p { color: var(--amber); font-size: 9px; letter-spacing: 1px; font-weight: 700; padding-left: 10px; }
+.tl-head .col-f { color: var(--fam); font-size: 9px; letter-spacing: 1px; font-weight: 700; padding-left: 10px; }
+.tl-row {
+  display: grid;
+  grid-template-columns: 58px 1fr 1fr;
+  border-bottom: 1px solid var(--line);
+}
+.tl-time {
+  padding: 8px 6px 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+}
+.tl-time small { color: var(--dim); font-size: 9px; font-weight: 400; }
+.tl-time em { font-style: normal; color: var(--amber); font-size: 8px; letter-spacing: 1px; margin-top: 2px; }
+.tl-cell { border-left: 1px solid var(--line); padding: 8px 10px; min-width: 0; }
+.tl-item h3 { font-size: 12px; font-weight: 700; letter-spacing: 0.3px; }
+.tl-item p { color: var(--dim); font-size: 10px; margin-top: 1px; }
+.tl-item .now { color: var(--up); font-size: 8px; letter-spacing: 1px; font-weight: 700; }
+.tl-cell.fam .tl-item h3 { color: var(--fam); }
