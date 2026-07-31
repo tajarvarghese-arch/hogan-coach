@@ -16,21 +16,21 @@ import '../styles/command-center.css'
 /* ---------- PORTFOLIO SEED (demoted to a strip) ---------- */
 /* Positions pulled from the connected brokerage; live quotes via /api/quote. */
 const seedBook = [
-  { sym: 'AAPL', name: 'APPLE',            yh: 'AAPL', qty: -1500, avg: 160.7906,     last: 331.924194,    prevClose: 338.19 },
-  { sym: 'ASML', name: 'ASML HOLDING',     yh: 'ASML', qty: -440,  avg: 1564.64007,   last: 1652.880005,   prevClose: 1550.69 },
-  { sym: 'BSX', name: 'BOSTON SCIENTIFIC', yh: 'BSX', qty: 3416,   avg: 73.175,       last: 45.115002,     prevClose: 46.04 },
-  { sym: 'CAT', name: 'CATERPILLAR',       yh: 'CAT', qty: -240,   avg: 981.504457,   last: 806.960022,    prevClose: 782.71 },
-  { sym: 'COST', name: 'COSTCO',           yh: 'COST', qty: -510,  avg: 948.973608,   last: 956.919983,    prevClose: 974.03 },
-  { sym: 'FISV', name: 'FISERV',           yh: 'FISV', qty: 1543,  avg: 64.803733,    last: 53.400002,     prevClose: 55.63 },
-  { sym: 'GOOG', name: 'ALPHABET',         yh: 'GOOG', qty: -3000, avg: 346.462531,   last: 331.929993,    prevClose: 335.76 },
-  { sym: 'MDT', name: 'MEDTRONIC',         yh: 'MDT', qty: 13000,  avg: 76.661717,    last: 85.489998,     prevClose: 87.54 },
-  { sym: 'NFLX', name: 'NETFLIX',          yh: 'NFLX', qty: -10000,avg: 73.222288,    last: 71.305,        prevClose: 73.63 },
-  { sym: 'OKLO', name: 'OKLO',             yh: 'OKLO', qty: -600,  avg: 174.296667,   last: 40.380001,     prevClose: 36.84 },
-  { sym: 'PLSE', name: 'PULSE BIOSCIENCES',yh: 'PLSE', qty: 1488,  avg: 17.75,        last: 35.259998,     prevClose: 34.25 },
-  { sym: 'SBUX', name: 'STARBUCKS',        yh: 'SBUX', qty: -1200, avg: 114.746808,   last: 105.93,        prevClose: 104.14 },
-  { sym: 'UNH', name: 'UNITEDHEALTH',      yh: 'UNH', qty: 15834,  avg: 294.204548,   last: 418.630005,    prevClose: 420.57 },
+  { sym: 'AAPL', name: 'APPLE',            yh: 'AAPL', qty: -1500, avg: 160.7906,     last: 309.899994,    prevClose: 338.19 },
+  { sym: 'ASML', name: 'ASML HOLDING',     yh: 'ASML', qty: -440,  avg: 1564.64007,   last: 1674,          prevClose: 1550.69 },
+  { sym: 'BSX', name: 'BOSTON SCIENTIFIC', yh: 'BSX', qty: 3416,   avg: 73.175,       last: 45.868599,     prevClose: 46.04 },
+  { sym: 'CAT', name: 'CATERPILLAR',       yh: 'CAT', qty: -240,   avg: 981.504457,   last: 814.309998,    prevClose: 782.71 },
+  { sym: 'COST', name: 'COSTCO',           yh: 'COST', qty: -510,  avg: 948.973608,   last: 953.590698,    prevClose: 974.03 },
+  { sym: 'FISV', name: 'FISERV',           yh: 'FISV', qty: 1543,  avg: 64.803733,    last: 53.950001,     prevClose: 55.63 },
+  { sym: 'GOOG', name: 'ALPHABET',         yh: 'GOOG', qty: -3000, avg: 346.462531,   last: 334.290009,    prevClose: 335.76 },
+  { sym: 'MDT', name: 'MEDTRONIC',         yh: 'MDT', qty: 13000,  avg: 76.661717,    last: 85.857399,     prevClose: 87.54 },
+  { sym: 'NFLX', name: 'NETFLIX',          yh: 'NFLX', qty: -10000,avg: 73.222288,    last: 72.519997,     prevClose: 73.63 },
+  { sym: 'OKLO', name: 'OKLO',             yh: 'OKLO', qty: -600,  avg: 174.296667,   last: 41.279999,     prevClose: 36.84 },
+  { sym: 'PLSE', name: 'PULSE BIOSCIENCES',yh: 'PLSE', qty: 1488,  avg: 17.75,        last: 35.040001,     prevClose: 34.25 },
+  { sym: 'SBUX', name: 'STARBUCKS',        yh: 'SBUX', qty: -1200, avg: 114.746808,   last: 106.029999,    prevClose: 104.14 },
+  { sym: 'UNH', name: 'UNITEDHEALTH',      yh: 'UNH', qty: 15834,  avg: 294.204548,   last: 421.369995,    prevClose: 420.57 },
 ]
-const netLiqSeed = 9593209.6
+const netLiqSeed = 9623803.56
 
 /* Thesis map — which positions belong to which bet. Anything unmapped
    falls into IDIO automatically, so new positions never break it.
@@ -356,41 +356,37 @@ function MoonIcon({ age, size = 13 }) {
 /* Schedule from the connected Google Calendar. SCHEDULE_FOR stamps the
    day it was synced for — past that date the panel says so instead of
    showing another day's events as today's. Agent refreshes both daily. */
-const SCHEDULE_FOR = '2026-07-22'
+const SCHEDULE_FOR = '2026-07-30'
 const seedSchedule = [
-  { start: '07:00', end: '08:00', title: 'GMG meeting', note: 'double-booked w/ mazurka sight-reading' },
-  { start: '08:00', end: '09:00', title: 'Encon maintenance' },
-  { start: '14:30', end: '15:30', title: 'QSBS gut-check · Citrin Cooperman', note: 'Teams · Brett Franks + Piyush' },
+  { start: '08:30', end: '08:45', title: 'Lift B — Pullups + Swings', note: 'week 1 · phase 2 entry' },
+  { start: '15:15', end: '16:15', title: 'Kagan hemmrohoid' },
 ]
 
 /* Week ahead — each row carries its real date so stale days drop off. */
 const seedWeek = [
-  { iso: '2026-07-23', day: 'THU', date: '23', items: [
-    { t: '07:00', s: 'Sight-read mazurka ×2' },
+  { iso: '2026-07-31', day: 'FRI', date: '31', items: [
+    { t: '08:30', s: 'Lift A — Bench 135 + RDL 105' },
+    { t: '08:45', s: 'Innis golf · Alex, Dan' },
   ]},
-  { iso: '2026-07-24', day: 'FRI', date: '24', items: [
-    { t: '07:00', s: 'Sight-read mazurka ×2' },
+  { iso: '2026-08-01', day: 'SAT', date: '1', items: [
   ]},
-  { iso: '2026-07-25', day: 'SAT', date: '25', items: [
-    { t: '07:00', s: 'Sight-read mazurka ×2' },
-    { t: '14:00', s: 'The Odyssey — IMAX · Port Chester' },
+  { iso: '2026-08-02', day: 'SUN', date: '2', items: [
   ]},
-  { iso: '2026-07-26', day: 'SUN', date: '26', items: [
-    { t: '07:00', s: 'Sight-read mazurka ×2' },
-  ]},
-  { iso: '2026-07-27', day: 'MON', date: '27', items: [
+  { iso: '2026-08-03', day: 'MON', date: '3', items: [
     { t: '07:00', s: 'Greenwich Central Men’s Meeting' },
-    { t: '15:00', s: 'Kevin Trexler + Matt Sirovich', hot: true },
+    { t: '09:00', s: 'Beast of Reincarnation release' },
+    { t: '14:30', s: 'Lift — Habit Keeper (vacation)' },
   ]},
-  { iso: '2026-07-28', day: 'TUE', date: '28', items: [
-    { t: '09:15', s: 'Coffee w/ Tim Coleman · CFCF' },
+  { iso: '2026-08-04', day: 'TUE', date: '4', items: [
     { t: '10:15', s: 'Piano Lesson' },
-    { t: '14:30', s: 'Ben’s oral surgery consult · Stamford', hot: true },
+    { t: '16:00', s: 'Zip N Dip Combo · Hakalau HI' },
   ]},
-  { iso: '2026-07-29', day: 'WED', date: '29', items: [
+  { iso: '2026-08-05', day: 'WED', date: '5', items: [
     { t: '07:00', s: 'GMG meeting' },
-    { t: '17:30', s: 'Dinner · Keens Steakhouse NYC' },
-    { t: '18:00', s: 'Phish at MSG · Sec 120 Row 6' },
+    { t: '14:00', s: 'Blue Hawaiian heli · Waikoloa' },
+  ]},
+  { iso: '2026-08-06', day: 'THU', date: '6', items: [
+    { t: '14:30', s: 'Lift — Habit Keeper (vacation)' },
   ]},
 ]
 
