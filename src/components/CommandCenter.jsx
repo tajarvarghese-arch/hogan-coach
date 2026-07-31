@@ -16,21 +16,21 @@ import '../styles/command-center.css'
 /* ---------- PORTFOLIO SEED (demoted to a strip) ---------- */
 /* Positions pulled from the connected brokerage; live quotes via /api/quote. */
 const seedBook = [
-  { sym: 'AAPL', name: 'APPLE',            yh: 'AAPL', qty: -1500, avg: 160.7906,     last: 309.899994,    prevClose: 338.19 },
-  { sym: 'ASML', name: 'ASML HOLDING',     yh: 'ASML', qty: -440,  avg: 1564.64007,   last: 1674,          prevClose: 1550.69 },
-  { sym: 'BSX', name: 'BOSTON SCIENTIFIC', yh: 'BSX', qty: 3416,   avg: 73.175,       last: 45.868599,     prevClose: 46.04 },
-  { sym: 'CAT', name: 'CATERPILLAR',       yh: 'CAT', qty: -240,   avg: 981.504457,   last: 814.309998,    prevClose: 782.71 },
-  { sym: 'COST', name: 'COSTCO',           yh: 'COST', qty: -510,  avg: 948.973608,   last: 953.590698,    prevClose: 974.03 },
-  { sym: 'FISV', name: 'FISERV',           yh: 'FISV', qty: 1543,  avg: 64.803733,    last: 53.950001,     prevClose: 55.63 },
-  { sym: 'GOOG', name: 'ALPHABET',         yh: 'GOOG', qty: -3000, avg: 346.462531,   last: 334.290009,    prevClose: 335.76 },
-  { sym: 'MDT', name: 'MEDTRONIC',         yh: 'MDT', qty: 13000,  avg: 76.661717,    last: 85.857399,     prevClose: 87.54 },
-  { sym: 'NFLX', name: 'NETFLIX',          yh: 'NFLX', qty: -10000,avg: 73.222288,    last: 72.519997,     prevClose: 73.63 },
-  { sym: 'OKLO', name: 'OKLO',             yh: 'OKLO', qty: -600,  avg: 174.296667,   last: 41.279999,     prevClose: 36.84 },
-  { sym: 'PLSE', name: 'PULSE BIOSCIENCES',yh: 'PLSE', qty: 1488,  avg: 17.75,        last: 35.040001,     prevClose: 34.25 },
-  { sym: 'SBUX', name: 'STARBUCKS',        yh: 'SBUX', qty: -1200, avg: 114.746808,   last: 106.029999,    prevClose: 104.14 },
-  { sym: 'UNH', name: 'UNITEDHEALTH',      yh: 'UNH', qty: 15834,  avg: 294.204548,   last: 421.369995,    prevClose: 420.57 },
+  { sym: 'AAPL', name: 'APPLE',            yh: 'AAPL', qty: -1500, avg: 160.7906,     last: 309.125,       prevClose: 333.43 },
+  { sym: 'ASML', name: 'ASML HOLDING',     yh: 'ASML', qty: -440,  avg: 1564.64007,   last: 1681.410034,   prevClose: 1651.44 },
+  { sym: 'BSX', name: 'BOSTON SCIENTIFIC', yh: 'BSX', qty: 3416,   avg: 73.175,       last: 46.119999,     prevClose: 46 },
+  { sym: 'CAT', name: 'CATERPILLAR',       yh: 'CAT', qty: -240,   avg: 981.504457,   last: 829,           prevClose: 809.14 },
+  { sym: 'COST', name: 'COSTCO',           yh: 'COST', qty: -510,  avg: 948.973608,   last: 948.799988,    prevClose: 954.17 },
+  { sym: 'FISV', name: 'FISERV',           yh: 'FISV', qty: 1543,  avg: 64.803733,    last: 54.040001,     prevClose: 54.07 },
+  { sym: 'GOOG', name: 'ALPHABET',         yh: 'GOOG', qty: -3000, avg: 346.462531,   last: 340.25,        prevClose: 333.68 },
+  { sym: 'MDT', name: 'MEDTRONIC',         yh: 'MDT', qty: 13000,  avg: 76.661717,    last: 85.559998,     prevClose: 85.71 },
+  { sym: 'NFLX', name: 'NETFLIX',          yh: 'NFLX', qty: -10000,avg: 73.222288,    last: 72.220001,     prevClose: 73.17 },
+  { sym: 'OKLO', name: 'OKLO',             yh: 'OKLO', qty: -600,  avg: 174.296667,   last: 42.2327,       prevClose: 41.09 },
+  { sym: 'PLSE', name: 'PULSE BIOSCIENCES',yh: 'PLSE', qty: 1488,  avg: 17.75,        last: 35.040001,     prevClose: 35.04 },
+  { sym: 'SBUX', name: 'STARBUCKS',        yh: 'SBUX', qty: -1200, avg: 114.746808,   last: 105.309998,    prevClose: 105.85 },
+  { sym: 'UNH', name: 'UNITEDHEALTH',      yh: 'UNH', qty: 15834,  avg: 294.204548,   last: 420.690002,    prevClose: 421.47 },
 ]
-const netLiqSeed = 9623803.56
+const netLiqSeed = 9583451.27
 
 /* Thesis map — which positions belong to which bet. Anything unmapped
    falls into IDIO automatically, so new positions never break it.
@@ -356,18 +356,14 @@ function MoonIcon({ age, size = 13 }) {
 /* Schedule from the connected Google Calendar. SCHEDULE_FOR stamps the
    day it was synced for — past that date the panel says so instead of
    showing another day's events as today's. Agent refreshes both daily. */
-const SCHEDULE_FOR = '2026-07-30'
+const SCHEDULE_FOR = '2026-07-31'
 const seedSchedule = [
-  { start: '08:30', end: '08:45', title: 'Lift B — Pullups + Swings', note: 'week 1 · phase 2 entry' },
-  { start: '15:15', end: '16:15', title: 'Kagan hemmrohoid' },
+  { start: '08:30', end: '08:45', title: 'Lift A — Bench 135 3×5 + RDL 105 2×8', note: 'week 1 · last before Hawaii' },
+  { start: '08:45', end: '12:45', title: 'Innis golf', note: 'Alex, Dan · Innis Arden' },
 ]
 
 /* Week ahead — each row carries its real date so stale days drop off. */
 const seedWeek = [
-  { iso: '2026-07-31', day: 'FRI', date: '31', items: [
-    { t: '08:30', s: 'Lift A — Bench 135 + RDL 105' },
-    { t: '08:45', s: 'Innis golf · Alex, Dan' },
-  ]},
   { iso: '2026-08-01', day: 'SAT', date: '1', items: [
   ]},
   { iso: '2026-08-02', day: 'SUN', date: '2', items: [
@@ -387,6 +383,8 @@ const seedWeek = [
   ]},
   { iso: '2026-08-06', day: 'THU', date: '6', items: [
     { t: '14:30', s: 'Lift — Habit Keeper (vacation)' },
+  ]},
+  { iso: '2026-08-07', day: 'FRI', date: '7', items: [
   ]},
 ]
 
