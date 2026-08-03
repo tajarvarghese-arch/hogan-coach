@@ -8,6 +8,13 @@
       "port": 3000
     },
     {
+      "name": "terminal-dev-alt",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "3007", "--strictPort"],
+      "port": 3007,
+      "autoPort": false
+    },
+    {
       "name": "pm-peds",
       "runtimeExecutable": "python",
       "runtimeArgs": ["-m", "http.server", "8099", "--directory",

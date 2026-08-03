@@ -63,17 +63,59 @@ const K = {
 
 const DEFAULT_SOBER = '2025-10-09'
 
+/* ---------- where the terminal is standing ----------
+   Everything place-dependent (weather, tides, the clock, sunrise/sunset,
+   the night watch) reads from one entry so a trip is a one-line change.
+   Markets stay on their own ET clock — see lib/market. */
+const PLACES = {
+  greenwich: {
+    label: 'GREENWICH',
+    lat: 41.0262, lon: -73.6282,
+    tz: 'America/New_York',
+    tideStation: '8469549', tideLabel: 'COS COB HARBOR',
+  },
+  maunaLani: {
+    label: 'MAUNA LANI',
+    lat: 19.9436, lon: -155.8681,
+    tz: 'Pacific/Honolulu',
+    tideStation: '1617433', tideLabel: 'KAWAIHAE HARBOR',
+  },
+}
+const HERE = PLACES.maunaLani
+const LOCAL_TZ = HERE.tz
+/* the strip next to the clock: ET, HST, … straight from the zone itself */
+const TZ_ABBR = new Intl.DateTimeFormat('en-US', { timeZone: LOCAL_TZ, timeZoneName: 'short' })
+  .formatToParts(new Date()).find((p) => p.type === 'timeZoneName')?.value || ''
+
 /* ---------- weather (Open-Meteo, no key, CORS-open) ---------- */
-const WX_LAT = 41.0262   // Greenwich, CT
-const WX_LON = -73.6282
+const WX_LAT = HERE.lat
+const WX_LON = HERE.lon
 const WX_URL =
   `https://api.open-meteo.com/v1/forecast?latitude=${WX_LAT}&longitude=${WX_LON}` +
   `&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m` +
   `&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset,weather_code` +
-  `&hourly=precipitation_probability&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FNew_York&forecast_days=6`
+  `&hourly=precipitation_probability&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=${encodeURIComponent(LOCAL_TZ)}&forecast_days=6`
 
-/* NOAA tide predictions — Cos Cob Harbor, Greenwich CT (no key, CORS-open) */
-const TIDE_STATION = '8469549'
+/* NOAA tide predictions — nearest station to HERE (no key, CORS-open) */
+const TIDE_STATION = HERE.tideStation
+
+/* NOAA returns station wall-clock ("2026-08-03 07:32") with no offset. Parsing
+   that raw would read it in the *viewer's* zone, so the curve slides by six
+   hours on a laptop still set to ET. Pin it to the station's zone instead. */
+const tzOffsetMs = (tz, at) => {
+  const p = Object.fromEntries(
+    new Intl.DateTimeFormat('en-US', {
+      timeZone: tz, hour12: false,
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+    }).formatToParts(at).map((x) => [x.type, x.value])
+  )
+  return Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour % 24, +p.minute, +p.second) - at.getTime()
+}
+const parseAtPlace = (wall, tz) => {
+  const asUTC = new Date(`${wall.replace(' ', 'T')}:00Z`)
+  return new Date(asUTC.getTime() - tzOffsetMs(tz, asUTC))
+}
 const tideURL = (from, to) =>
   `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&datum=MLLW` +
   `&station=${TIDE_STATION}&time_zone=lst_ldt&units=english&interval=hilo&format=json` +
@@ -141,7 +183,7 @@ function WxIcon({ code, size = 22 }) {
 function Boot({ done }) {
   const [count, setCount] = useState(1)
   useEffect(() => {
-    const hour = +new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: '2-digit', hour12: false }).format(new Date())
+    const hour = +new Intl.DateTimeFormat('en-US', { timeZone: LOCAL_TZ, hour: '2-digit', hour12: false }).format(new Date())
     const greet = hour < 5 ? 'STILL UP' : hour < 12 ? 'GOOD MORNING' : hour < 18 ? 'GOOD AFTERNOON' : 'GOOD EVENING'
     Boot.seq = ['> TAJAR TERMINAL', '> LINK ██████ OK', `> ${greet}, TAJAR.`]
     const t = setInterval(() => {
@@ -289,12 +331,13 @@ function TideHero({ tides, now }) {
     }
     const pts = []
     for (let x = 0; x <= w; x += 3) pts.push(`${x},${yOf(ftAt(t0 + (x / w) * (t1 - t0))).toFixed(1)}`)
-    const hm = (d) => new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).format(d)
+    const hm = (d) => new Intl.DateTimeFormat('en-US', { timeZone: LOCAL_TZ, hour: '2-digit', minute: '2-digit', hour12: false }).format(d)
+    const dayAt = (d) => new Intl.DateTimeFormat('en-CA', { timeZone: LOCAL_TZ }).format(d)
     const xOf = (tm) => Math.min(w - 46, Math.max(46, ((tm - t0) / (t1 - t0)) * w))
     const mark = (ev) => ev && ev.when.getTime() < t1 ? {
       x: xOf(ev.when.getTime()),
       y: yOf(ev.ft),
-      label: `${ev.type === 'H' ? '▲' : '▼'}${hm(ev.when)}${ev.when.getDate() !== now.getDate() ? '+1' : ''} · ${ev.ft.toFixed(1)}FT`,
+      label: `${ev.type === 'H' ? '▲' : '▼'}${hm(ev.when)}${dayAt(ev.when) !== dayAt(now) ? '+1' : ''} · ${ev.ft.toFixed(1)}FT`,
     } : null
     const upcoming = tides.filter((t) => t.when > now)
     return {
@@ -357,34 +400,36 @@ function MoonIcon({ age, size = 13 }) {
    day it was synced for — past that date the panel says so instead of
    showing another day's events as today's. Agent refreshes both daily. */
 const SCHEDULE_FOR = '2026-08-03'
+/* Times are HST while the terminal is standing at Mauna Lani — the calendar
+   is ET-anchored, so each entry is shifted −6h to match the clock above. */
 const seedSchedule = [
-  { start: '09:00', end: '10:00', title: 'Beast of Reincarnation release' },
-  { start: '14:00', end: '15:00', title: 'Nemours Valuation', note: 'Teams · Kevin Trexler' },
-  { start: '14:30', end: '14:45', title: 'Lift — Habit Keeper', note: 'vacation · 5–10 min' },
+  { start: '03:00', end: '04:00', title: 'Beast of Reincarnation release' },
+  { start: '08:00', end: '09:00', title: 'Nemours Valuation', note: 'Teams · Kevin Trexler · 14:00 ET' },
+  { start: '08:30', end: '08:45', title: 'Lift — Habit Keeper', note: 'vacation · 5–10 min' },
 ]
 
 /* Week ahead — each row carries its real date so stale days drop off. */
 const seedWeek = [
   { iso: '2026-08-04', day: 'TUE', date: '4', items: [
-    { t: '16:00', s: 'Zip N Dip Combo · Hakalau HI' },
+    { t: '10:00', s: 'Zip N Dip Combo · Hakalau HI' },
   ]},
   { iso: '2026-08-05', day: 'WED', date: '5', items: [
-    { t: '14:00', s: 'Blue Hawaiian heli · Waikoloa' },
+    { t: '08:00', s: 'Blue Hawaiian heli · Waikoloa' },
   ]},
   { iso: '2026-08-06', day: 'THU', date: '6', items: [
-    { t: '14:30', s: 'Lift — Habit Keeper (vacation)' },
+    { t: '08:30', s: 'Lift — Habit Keeper (vacation)' },
   ]},
   { iso: '2026-08-07', day: 'FRI', date: '7', items: [
   ]},
   { iso: '2026-08-08', day: 'SAT', date: '8', items: [
-    { t: '14:30', s: 'Lift — Habit Keeper (vacation)' },
+    { t: '08:30', s: 'Lift — Habit Keeper (vacation)' },
+    { t: '19:45', s: 'Merriman’s · Waimea' },
   ]},
   { iso: '2026-08-09', day: 'SUN', date: '9', items: [
-    { t: '01:45', s: 'Merriman’s · Waimea' },
   ]},
   { iso: '2026-08-10', day: 'MON', date: '10', items: [
-    { t: '07:00', s: 'Greenwich Central Men’s Meeting' },
-    { t: '08:30', s: 'Lift B — Pullups + Swings' },
+    { t: '01:00', s: 'Greenwich Central Men’s Meeting · 07:00 ET' },
+    { t: '02:30', s: 'Lift B — Pullups + Swings · 08:30 ET' },
   ]},
 ]
 
@@ -964,12 +1009,12 @@ export default function CommandCenter() {
     return () => { alive = false; clearInterval(id) }
   }, [syncKey, refreshTick])
 
-  /* tides — NOAA Cos Cob Harbor, refreshed every 6 h (predictions are static) */
+  /* tides — NOAA station nearest HERE, refreshed every 6 h (predictions are static) */
   useEffect(() => {
     let alive = true
     async function pull() {
       try {
-        const fmt = (d) => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(d).replace(/-/g, '')
+        const fmt = (d) => new Intl.DateTimeFormat('en-CA', { timeZone: LOCAL_TZ }).format(d).replace(/-/g, '')
         const today = new Date()
         const tomorrow = new Date(today.getTime() + 86400000)
         const res = await fetch(tideURL(fmt(today), fmt(tomorrow)))
@@ -977,7 +1022,7 @@ export default function CommandCenter() {
         const d = await res.json()
         if (alive && Array.isArray(d?.predictions)) {
           setTides(d.predictions.map((p) => ({
-            when: new Date(p.t.replace(' ', 'T')),
+            when: parseAtPlace(p.t, LOCAL_TZ),
             ft: Number(p.v),
             type: p.type,
           })))
@@ -1106,13 +1151,13 @@ export default function CommandCenter() {
 
   const marketStatus = marketState(now)
   const clock = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+    timeZone: LOCAL_TZ, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
   }).format(now)
   const dateStr = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/New_York', weekday: 'short', month: 'short', day: '2-digit',
+    timeZone: LOCAL_TZ, weekday: 'short', month: 'short', day: '2-digit',
   }).format(now).toUpperCase()
   const nowHM = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: false,
+    timeZone: LOCAL_TZ, hour: '2-digit', minute: '2-digit', hour12: false,
   }).format(now)
   const isoOf = (d) => new Intl.DateTimeFormat('en-CA').format(d)
   const todayISO = isoOf(now)
@@ -1212,7 +1257,7 @@ export default function CommandCenter() {
   const hmOf = (ts) => {
     const d = new Date(ts)
     if (Number.isNaN(d.getTime())) return '—'
-    return new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: false }).format(d)
+    return new Intl.DateTimeFormat('en-US', { timeZone: LOCAL_TZ, hour: '2-digit', minute: '2-digit', hour12: false }).format(d)
   }
   const weekMeta = calDays
     ? `LIVE · SYNCED ${hmOf(calTs)}`
@@ -1620,7 +1665,7 @@ export default function CommandCenter() {
         </div>
         <div className="bar-stats">
           <div className="bar-stat date"><u>DATE</u><b>{dateStr}</b></div>
-          <div className="bar-stat now"><u>GREENWICH</u><b>{wx ? `${wx.temp}°F ${wx.label}` : '—'}</b></div>
+          <div className="bar-stat now"><u>{HERE.label}</u><b>{wx ? `${wx.temp}°F ${wx.label}` : '—'}</b></div>
           {(wx?.days?.length ? wx.days.slice(0, 5) : Array.from({ length: 5 }, () => null)).map((day, i) =>
             day ? (
               <button className={`bar-stat fc ${fcRain === day.date ? 'on' : ''}`} key={day.date}
@@ -1659,7 +1704,7 @@ export default function CommandCenter() {
           </div>
         )}
         <div className="bar-clock">
-          <time>{clock}<span style={{ fontSize: 9, color: 'var(--dim)', letterSpacing: 1 }}> ET</span></time>
+          <time>{clock}<span style={{ fontSize: 9, color: 'var(--dim)', letterSpacing: 1 }}> {TZ_ABBR}</span></time>
           <button className="sober-chip" onClick={() => setEditSober((v) => !v)} title="Sober day counter — tap to set start date">
             SOBER <b>{sober.days}D</b>
           </button>
@@ -1697,7 +1742,7 @@ export default function CommandCenter() {
             <span key={rep} aria-hidden={rep === 1 || undefined}>
               {wx && (
                 <span className="tape-item">
-                  <b>GREENWICH</b>
+                  <b>{HERE.label}</b>
                   <span className="px">{wx.temp}°F {wx.label}</span>
                   <span className="wx-note">{wx.precip}% PRECIP</span>
                 </span>
@@ -2383,7 +2428,7 @@ export default function CommandCenter() {
         <section className="panel span-2">
           <div className="panel-head">
             <h2><span className="fn">09</span>TIDE · 24H</h2>
-            <span className="meta">COS COB HARBOR · NOAA {TIDE_STATION}</span>
+            <span className="meta">{HERE.tideLabel} · NOAA {TIDE_STATION}</span>
           </div>
           <div className="tide-panel" title="Tide, next 24h · Cos Cob Harbor">
             <TideHero tides={tides} now={now} />
