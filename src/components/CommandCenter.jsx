@@ -356,23 +356,19 @@ function MoonIcon({ age, size = 13 }) {
 /* Schedule from the connected Google Calendar. SCHEDULE_FOR stamps the
    day it was synced for — past that date the panel says so instead of
    showing another day's events as today's. Agent refreshes both daily. */
-const SCHEDULE_FOR = '2026-08-02'
+const SCHEDULE_FOR = '2026-08-03'
 const seedSchedule = [
+  { start: '09:00', end: '10:00', title: 'Beast of Reincarnation release' },
+  { start: '14:00', end: '15:00', title: 'Nemours Valuation', note: 'Teams · Kevin Trexler' },
+  { start: '14:30', end: '14:45', title: 'Lift — Habit Keeper', note: 'vacation · 5–10 min' },
 ]
 
 /* Week ahead — each row carries its real date so stale days drop off. */
 const seedWeek = [
-  { iso: '2026-08-03', day: 'MON', date: '3', items: [
-    { t: '09:00', s: 'Beast of Reincarnation release' },
-    { t: '14:00', s: 'Nemours Valuation · Teams', hot: true },
-    { t: '14:30', s: 'Lift — Habit Keeper (vacation)' },
-  ]},
   { iso: '2026-08-04', day: 'TUE', date: '4', items: [
-    { t: '10:15', s: 'Piano Lesson' },
     { t: '16:00', s: 'Zip N Dip Combo · Hakalau HI' },
   ]},
   { iso: '2026-08-05', day: 'WED', date: '5', items: [
-    { t: '07:00', s: 'GMG meeting' },
     { t: '14:00', s: 'Blue Hawaiian heli · Waikoloa' },
   ]},
   { iso: '2026-08-06', day: 'THU', date: '6', items: [
@@ -385,6 +381,10 @@ const seedWeek = [
   ]},
   { iso: '2026-08-09', day: 'SUN', date: '9', items: [
     { t: '01:45', s: 'Merriman’s · Waimea' },
+  ]},
+  { iso: '2026-08-10', day: 'MON', date: '10', items: [
+    { t: '07:00', s: 'Greenwich Central Men’s Meeting' },
+    { t: '08:30', s: 'Lift B — Pullups + Swings' },
   ]},
 ]
 
