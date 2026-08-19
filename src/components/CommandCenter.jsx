@@ -399,18 +399,13 @@ function MoonIcon({ age, size = 13 }) {
 /* Schedule from the connected Google Calendar. SCHEDULE_FOR stamps the
    day it was synced for — past that date the panel says so instead of
    showing another day's events as today's. Agent refreshes both daily. */
-const SCHEDULE_FOR = '2026-08-18'
+const SCHEDULE_FOR = '2026-08-19'
 const seedSchedule = [
-  { start: '08:30', end: '08:45', title: 'Lift B — Pullups + Swings', note: '12 min' },
-  { start: '11:00', end: '14:00', title: 'PMP Board Meeting — Q2', note: 'Scopia · 152 W 57th' },
-  { start: '17:00', end: '18:00', title: 'Navsonix — Yaniv / Dan', note: 'Google Meet' },
+  { start: '07:00', end: '08:00', title: 'GMG meeting' },
 ]
 
 /* Week ahead — each row carries its real date so stale days drop off. */
 const seedWeek = [
-  { iso: '2026-08-19', day: 'WED', date: '19', items: [
-    { t: '07:00', s: 'GMG meeting' },
-  ]},
   { iso: '2026-08-20', day: 'THU', date: '20', items: [
     { t: '08:30', s: 'Lift A — Bench 145 + RDL 115' },
     { t: '19:00', s: 'Meeting · LM, TV, PB, JK', hot: true },
@@ -434,6 +429,9 @@ const seedWeek = [
   { iso: '2026-08-25', day: 'TUE', date: '25', items: [
     { t: '08:30', s: 'Lift A — Bench 150 + RDL 125' },
     { t: '10:15', s: 'Piano Lesson' },
+  ]},
+  { iso: '2026-08-26', day: 'WED', date: '26', items: [
+    { t: '07:00', s: 'GMG meeting' },
   ]},
 ]
 
