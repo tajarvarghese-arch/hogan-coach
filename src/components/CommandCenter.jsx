@@ -16,21 +16,21 @@ import '../styles/command-center.css'
 /* ---------- PORTFOLIO SEED (demoted to a strip) ---------- */
 /* Positions pulled from the connected brokerage; live quotes via /api/quote. */
 const seedBook = [
-  { sym: 'AAPL', name: 'APPLE',            yh: 'AAPL', qty: -1500, avg: 160.7906,     last: 304.929993,    prevClose: 308.26 },
-  { sym: 'ASML', name: 'ASML HOLDING',     yh: 'ASML', qty: -440,  avg: 1564.64007,   last: 1795.433105,   prevClose: 1733.48 },
-  { sym: 'BSX', name: 'BOSTON SCIENTIFIC', yh: 'BSX', qty: 3416,   avg: 73.175,       last: 51.228802,     prevClose: 50.46 },
-  { sym: 'CAT', name: 'CATERPILLAR',       yh: 'CAT', qty: -240,   avg: 981.504457,   last: 843.945129,    prevClose: 837.58 },
-  { sym: 'COST', name: 'COSTCO',           yh: 'COST', qty: -510,  avg: 948.973608,   last: 943.859985,    prevClose: 952.75 },
-  { sym: 'FISV', name: 'FISERV',           yh: 'FISV', qty: 1543,  avg: 64.803733,    last: 53.080002,     prevClose: 52.22 },
-  { sym: 'GOOG', name: 'ALPHABET',         yh: 'GOOG', qty: -3000, avg: 346.462531,   last: 343.730011,    prevClose: 355.84 },
-  { sym: 'MDT', name: 'MEDTRONIC',         yh: 'MDT', qty: 13000,  avg: 76.661717,    last: 90.410004,     prevClose: 89.41 },
-  { sym: 'NFLX', name: 'NETFLIX',          yh: 'NFLX', qty: -10000,avg: 73.222288,    last: 74.879997,     prevClose: 76.29 },
-  { sym: 'OKLO', name: 'OKLO',             yh: 'OKLO', qty: -600,  avg: 174.296667,   last: 46.849998,     prevClose: 44.49 },
-  { sym: 'PLSE', name: 'PULSE BIOSCIENCES',yh: 'PLSE', qty: 1488,  avg: 17.75,        last: 44.400002,     prevClose: 41.51 },
-  { sym: 'SBUX', name: 'STARBUCKS',        yh: 'SBUX', qty: -1200, avg: 114.746808,   last: 106.650002,    prevClose: 104.65 },
-  { sym: 'UNH', name: 'UNITEDHEALTH',      yh: 'UNH', qty: 15834,  avg: 294.204548,   last: 402.600006,    prevClose: 408.74 },
+  { sym: 'AAPL', name: 'APPLE',            yh: 'AAPL', qty: -1500, avg: 160.7906,     last: 310.290009,    prevClose: 305.59 },
+  { sym: 'ASML', name: 'ASML HOLDING',     yh: 'ASML', qty: -440,  avg: 1564.64007,   last: 1796.849976,   prevClose: 1883.12 },
+  { sym: 'BSX', name: 'BOSTON SCIENTIFIC', yh: 'BSX', qty: 3416,   avg: 73.175,       last: 51.169998,     prevClose: 51.43 },
+  { sym: 'CAT', name: 'CATERPILLAR',       yh: 'CAT', qty: -240,   avg: 981.504457,   last: 840.0,         prevClose: 881.65 },
+  { sym: 'COST', name: 'COSTCO',           yh: 'COST', qty: -510,  avg: 948.973608,   last: 966.330017,    prevClose: 953.50 },
+  { sym: 'FISV', name: 'FISERV',           yh: 'FISV', qty: 1543,  avg: 64.803733,    last: 52.660000,     prevClose: 52.21 },
+  { sym: 'GOOG', name: 'ALPHABET',         yh: 'GOOG', qty: -3000, avg: 346.462531,   last: 341.130005,    prevClose: 341.45 },
+  { sym: 'MDT', name: 'MEDTRONIC',         yh: 'MDT', qty: 13000,  avg: 76.661717,    last: 92.550003,     prevClose: 90.60 },
+  { sym: 'NFLX', name: 'NETFLIX',          yh: 'NFLX', qty: -10000,avg: 73.222288,    last: 78.834999,     prevClose: 76.02 },
+  { sym: 'OKLO', name: 'OKLO',             yh: 'OKLO', qty: -600,  avg: 174.296667,   last: 41.715000,     prevClose: 43.88 },
+  { sym: 'PLSE', name: 'PULSE BIOSCIENCES',yh: 'PLSE', qty: 1488,  avg: 17.75,        last: 46.680000,     prevClose: 46.79 },
+  { sym: 'SBUX', name: 'STARBUCKS',        yh: 'SBUX', qty: -1200, avg: 114.746808,   last: 107.175003,    prevClose: 107.92 },
+  { sym: 'UNH', name: 'UNITEDHEALTH',      yh: 'UNH', qty: 15834,  avg: 294.204548,   last: 395.700012,    prevClose: 395.62 },
 ]
-const netLiqSeed = 9309390.19
+const netLiqSeed = 9188111.39
 
 /* Thesis map — which positions belong to which bet. Anything unmapped
    falls into IDIO automatically, so new positions never break it.
@@ -399,46 +399,41 @@ function MoonIcon({ age, size = 13 }) {
 /* Schedule from the connected Google Calendar. SCHEDULE_FOR stamps the
    day it was synced for — past that date the panel says so instead of
    showing another day's events as today's. Agent refreshes both daily. */
-const SCHEDULE_FOR = '2026-08-11'
+const SCHEDULE_FOR = '2026-08-18'
 const seedSchedule = [
-  { start: '08:30', end: '08:45', title: 'Lift A — Bench 140 3×5 + RDL 105', note: '13 min' },
-  { start: '10:15', end: '11:15', title: 'Piano Lesson', note: 'Candida Borges' },
-  { start: '19:00', end: '19:45', title: 'Rheoxtech Intro Pitch', note: 'Zoom · Alexei Mlodinow' },
+  { start: '08:30', end: '08:45', title: 'Lift B — Pullups + Swings', note: '12 min' },
+  { start: '11:00', end: '14:00', title: 'PMP Board Meeting — Q2', note: 'Scopia · 152 W 57th' },
+  { start: '17:00', end: '18:00', title: 'Navsonix — Yaniv / Dan', note: 'Google Meet' },
 ]
 
 /* Week ahead — each row carries its real date so stale days drop off. */
 const seedWeek = [
-  { iso: '2026-08-12', day: 'WED', date: '12', items: [
+  { iso: '2026-08-19', day: 'WED', date: '19', items: [
     { t: '07:00', s: 'GMG meeting' },
-    { t: '09:00', s: 'Tv pb mtg · Piyush Bharti', hot: true },
   ]},
-  { iso: '2026-08-13', day: 'THU', date: '13', items: [
-    { t: '08:30', s: 'Lift B — Pullups + Swings' },
-    { t: '10:00', s: 'Débora — Taj 10, Anna 11' },
-    { t: '11:30', s: 'Haircut with Naomi' },
-    { t: '13:45', s: 'Britt Szostak · Lenox Advisors', hot: true },
-    { t: '15:00', s: 'Matador Fire intro call', hot: true },
-    { t: '16:00', s: 'Call with Alec' },
-  ]},
-  { iso: '2026-08-14', day: 'FRI', date: '14', items: [
-    { t: '06:00', s: 'Delta 4948 · CVG → LGA' },
-    { t: '07:00', s: 'Book tee time with Himanshu' },
+  { iso: '2026-08-20', day: 'THU', date: '20', items: [
     { t: '08:30', s: 'Lift A — Bench 145 + RDL 115' },
-    { t: '08:50', s: 'Golf with Alex' },
+    { t: '19:00', s: 'Meeting · LM, TV, PB, JK', hot: true },
   ]},
-  { iso: '2026-08-15', day: 'SAT', date: '15', items: [
+  { iso: '2026-08-21', day: 'FRI', date: '21', items: [
+    { t: '08:30', s: 'Lift B — Pullups + Swings' },
+    { t: '08:50', s: 'Tee time · Innis Arden' },
+    { t: '15:30', s: 'Meeting with Philippa' },
   ]},
-  { iso: '2026-08-16', day: 'SUN', date: '16', items: [
+  { iso: '2026-08-22', day: 'SAT', date: '22', items: [
+    { t: '13:00', s: 'Anna + Tajar at Wildflower' },
   ]},
-  { iso: '2026-08-17', day: 'MON', date: '17', items: [
+  { iso: '2026-08-23', day: 'SUN', date: '23', items: [
+    { t: '15:45', s: 'Spa · couples treatment' },
+  ]},
+  { iso: '2026-08-24', day: 'MON', date: '24', items: [
     { t: '07:00', s: 'Greenwich Central Men’s Meeting' },
-    { t: '08:05', s: 'Delta 5016 · LGA → CVG' },
-    { t: '08:30', s: 'Lift A — Bench 145 + RDL 115' },
-  ]},
-  { iso: '2026-08-18', day: 'TUE', date: '18', items: [
     { t: '08:30', s: 'Lift B — Pullups + Swings' },
+    { t: '15:00', s: 'Kevin Trexler + Matt Sirovich', hot: true },
+  ]},
+  { iso: '2026-08-25', day: 'TUE', date: '25', items: [
+    { t: '08:30', s: 'Lift A — Bench 150 + RDL 125' },
     { t: '10:15', s: 'Piano Lesson' },
-    { t: '11:00', s: 'PMP Board Meeting Q2 · Scopia', hot: true },
   ]},
 ]
 
